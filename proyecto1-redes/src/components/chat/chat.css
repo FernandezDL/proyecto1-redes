@@ -1,0 +1,56 @@
+.bttnLogOut{
+    background-color: #2a1e1e;
+    width: 170px;
+    height: 55px;
+    border-radius: 20px;
+    color: white;
+}
+
+.chatContainer{
+    width: 1100px;
+    height: 650px;
+
+    border: solid;
+    border-color: #2a1e1e;
+    border-radius: 25px;
+
+    background-color: #ffc5c1;
+
+    margin-top: 30px;
+
+    display: flex;
+    flex-direction: row;
+}
+
+.menuContainer{
+    background-color: #aa6581;
+
+    border-radius: 22px;
+    border: solid;
+
+    height: 632px;
+    width: 270px;
+
+    padding-bottom: 15px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.contactos{
+    width: 265px;
+    height: 450px;
+
+    display: flex;
+    flex-direction: column;
+    
+}
+
+.divCentrado{
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+}

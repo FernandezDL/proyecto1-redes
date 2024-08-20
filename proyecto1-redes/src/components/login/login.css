@@ -1,0 +1,33 @@
+.mainContenedor{
+    width: 500px;
+    height: 450px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    border-color: #2a1e1e;
+    border-style: solid;
+    margin-top: 150px;
+}
+
+.logInBttn{
+    width: 150px;
+    height: 55px;
+    border-radius: 20px;
+    background-color: #f99fa9;
+}
+
+.signUpBttn{
+    width: 150px;
+    height: 55px;
+    border-radius: 20px;
+    background-color: #aa6581;
+}
+
+.bttnContainer{
+    width: 80%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
