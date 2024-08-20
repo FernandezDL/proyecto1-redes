@@ -52,5 +52,17 @@
     width: 100%;
 
     display: flex;
-    justify-content: center;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.bttnAddContact{
+    width: 30px;
+    height: 30px;
+
+    border-radius: 100%;
+
+    background-color: #ffc5c1;
+    color: black;
+    font-weight: bold;
 }

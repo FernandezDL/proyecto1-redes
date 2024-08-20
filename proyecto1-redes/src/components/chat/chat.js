@@ -2,6 +2,8 @@ import "./chat.css";
 import XMPPService from "../../services/xmpp.js";
 import { useNavigate, useLocation  } from "react-router-dom";
 import { useEffect, useState } from "react";
+import AddContact from "../addContact/addContact.js";
+
 export default function Chat(){
     const navigate = useNavigate(); // Hook para navegar
     const location = useLocation(); // Hook para acceder al estado pasado con navigate
@@ -9,6 +11,9 @@ export default function Chat(){
     const { user } = location.state || {}; // Obtener el user del estado pasado
 
     const [contacts, setContacts] = useState([]);
+    const [addContactWindow, setAddContactWindow] = useState(false);
+
+    console.log(addContactWindow)
 
     const handleLogOut = async () =>{
         try {
@@ -54,18 +59,20 @@ export default function Chat(){
                     <div className="contactos">
                         <div className="divCentrado">
                             <h3>Contactos</h3>
+
+                            <button className="bttnAddContact" onClick={() => setAddContactWindow(true)}>+</button>
                         </div>
 
                         <ul>
-                            {contacts.map(contact => (
+                            {contacts.map((contact, index) => (
                                 <li
-                                    key={contact.jid}
+                                    key={`${contact.jid}-${index}`}  // Combinando jid con el índice para garantizar unicidad
                                     style={{
                                         color: contact.status === 'offline'
                                             ? '#a30808'  // Rojo para offline
                                             : contact.status === 'away'
-                                            ? '#8d5f17'  // Marrón para away
-                                            : '#1d6317'  // Verde para online o cualquier otro estado
+                                                ? '#8d5f17'  // Marrón para away
+                                                : '#1d6317'  // Verde para online o cualquier otro estado
                                     }}
                                 >
                                     {contact.name}
@@ -77,6 +84,10 @@ export default function Chat(){
                     <button className="bttnLogOut" onClick={handleLogOut}>Log Out</button>
                 </div>
             </div>
+
+                {addContactWindow && (
+                    <AddContact closePopup={() => setAddContactWindow(false)}/>
+                )}
         </>
     )
 }

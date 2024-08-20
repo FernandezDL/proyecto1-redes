@@ -110,7 +110,6 @@ class XMPPService {
         return true;
     }
    
-
     disconnect() {
         if (this.connection && this.connection.connected) {
             this.connection.disconnect();
