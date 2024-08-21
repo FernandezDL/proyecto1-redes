@@ -3,6 +3,7 @@ import XMPPService from "../../services/xmpp.js";
 import { useNavigate, useLocation  } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import AddContact from "../addContact/addContact.js";
+import MoreOptions from "../moreOptions/moreOptions.js";
 
 export default function Chat(){
     const navigate = useNavigate(); // Hook para navegar
@@ -12,8 +13,14 @@ export default function Chat(){
 
     const [contacts, setContacts] = useState([]);
     const [addContactWindow, setAddContactWindow] = useState(false);
+    const [moreOptionsWindow, setMoreOptionsWindow] = useState(false);
     const [selectedContact, setSelectedContact] = useState(null);
     const [message, setMessage] = useState("");
+
+    const openAddContactPopup = () => {
+        setMoreOptionsWindow(false); // Cerrar el pop-up de más opciones
+        setAddContactWindow(true); // Abrir el pop-up de añadir contacto
+    };
 
     const handleLogOut = async () =>{
         try {
@@ -66,29 +73,31 @@ export default function Chat(){
                     <h3>{user}</h3>
 
                     <div className="contactos">
-                        <div className="divCentrado">
-                            <h3>Contactos</h3>
+                        <div>
+                            <div className="divCentrado">
+                                <h3>Contactos</h3>
 
-                            <button className="bttnAddContact" onClick={() => setAddContactWindow(true)}>+</button>
+                                <button className="bttnAddContact" onClick={() => setMoreOptionsWindow(true)}>+</button>
+                            </div>
+
+                            <ul>
+                                {contacts.map((contact, index) => (
+                                    <li
+                                        key={`${contact.jid}-${index}`}  // Combinando jid con el índice para garantizar unicidad
+                                        style={{
+                                            color: contact.status === 'offline'
+                                                ? '#a30808'  // Rojo para offline
+                                                : contact.status === 'away'
+                                                    ? '#8d5f17'  // Marrón para away
+                                                    : '#1d6317'  // Verde para online o cualquier otro estado
+                                        }}
+                                        onClick={() => setSelectedContact(contact)}
+                                    >
+                                        {contact.name}
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
-
-                        <ul>
-                            {contacts.map((contact, index) => (
-                                <li
-                                    key={`${contact.jid}-${index}`}  // Combinando jid con el índice para garantizar unicidad
-                                    style={{
-                                        color: contact.status === 'offline'
-                                            ? '#a30808'  // Rojo para offline
-                                            : contact.status === 'away'
-                                                ? '#8d5f17'  // Marrón para away
-                                                : '#1d6317'  // Verde para online o cualquier otro estado
-                                    }}
-                                    onClick={() => setSelectedContact(contact)}
-                                >
-                                    {contact.name}
-                                </li>
-                            ))}
-                        </ul>
                     </div>
 
                     <button className="bttnLogOut" onClick={handleLogOut}>Log Out</button>
@@ -134,6 +143,14 @@ export default function Chat(){
                     </div>
                 )}
             </div>
+
+            {/* Pop Up mas opciones */}
+            {moreOptionsWindow && (
+                <MoreOptions
+                    closePopup={() => setMoreOptionsWindow(false)}
+                    openAddContactPopup={openAddContactPopup}
+                />
+            )}
 
             {/* Pop Up añadir contacto */}
             {addContactWindow && (

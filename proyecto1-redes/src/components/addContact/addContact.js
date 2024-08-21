@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./addContact.css";  // Asegúrate de que los estilos CSS estén en este archivo
+import "./addContact.css";
 import {TextField} from "@mui/material";
 import XMPPService from "../../services/xmpp.js";
 
