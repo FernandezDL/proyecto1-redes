@@ -26,6 +26,20 @@ class XMPPService {
         });
     }
 
+    sendMessage(toJid, message) {
+        if (!this.connection || !this.connection.connected) {
+            console.error('No hay conexión establecida con el servidor XMPP');
+            return;
+        }
+
+        const messageStanza = $msg({ to: toJid, from: this.userJid, type: 'chat' })
+            .c('body')
+            .t(message);
+
+        this.connection.send(messageStanza.tree());
+        console.log(`Mensaje enviado a ${toJid}: ${message}`);
+    }
+
     getContacts() {
         return new Promise((resolve, reject) => {
             if (!this.connection || !this.connection.connected) {

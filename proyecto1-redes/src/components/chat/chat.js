@@ -13,6 +13,7 @@ export default function Chat(){
     const [contacts, setContacts] = useState([]);
     const [addContactWindow, setAddContactWindow] = useState(false);
     const [selectedContact, setSelectedContact] = useState(null);
+    const [message, setMessage] = useState("");
 
     const handleLogOut = async () =>{
         try {
@@ -32,6 +33,15 @@ export default function Chat(){
         } catch (error) {
             console.error("Error obteniendo los contactos: ", error);
             navigate('/');
+        }
+    };
+
+    const handleSendMessage = () => {
+        if (selectedContact && message) {
+            XMPPService.sendMessage(selectedContact.name, message);
+            setMessage(""); // Limpiar el campo del mensaje después de enviarlo
+        } else {
+            console.error("No se puede enviar un mensaje vacío o sin un contacto seleccionado.");
         }
     };
 
@@ -107,12 +117,16 @@ export default function Chat(){
                             </div>
 
                             <div className="messageSpace">
-                                <div className="message" contentEditable={true}>
-                                    Escribe un mensaje...
-                                </div>
+                                <textarea
+                                    className="messageInput"
+                                    value={message}
+                                    onChange={(e) => setMessage(e.target.value)}
+                                    placeholder="Escribe un mensaje..."
+                                    // style={{ width: '100%', height: '100px' }}
+                                />
 
                                 <div className="messageSpaceBttn">
-                                    <button className="sendBttn">Enviar</button>
+                                    <button className="sendBttn" onClick={handleSendMessage}>Enviar</button>
                                     <button className="archivosBttn">Adjuntar archivos</button>
                                 </div>
                             </div>

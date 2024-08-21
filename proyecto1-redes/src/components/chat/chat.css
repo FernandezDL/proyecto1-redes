@@ -101,9 +101,12 @@ ul li {
     padding: 15px;
 }
 
-.message{
+.messageInput{
     width: 630px;
     height: 105px;
+    resize: none;
+    background-color: transparent;
+    border: none;
 }
 
 .messageSpaceBttn{
