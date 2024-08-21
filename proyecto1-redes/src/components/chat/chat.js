@@ -1,7 +1,7 @@
 import "./chat.css";
 import XMPPService from "../../services/xmpp.js";
 import { useNavigate, useLocation  } from "react-router-dom";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import AddContact from "../addContact/addContact.js";
 
 export default function Chat(){
@@ -12,6 +12,7 @@ export default function Chat(){
 
     const [contacts, setContacts] = useState([]);
     const [addContactWindow, setAddContactWindow] = useState(false);
+    const [selectedContact, setSelectedContact] = useState(null);
 
     const handleLogOut = async () =>{
         try {
@@ -72,6 +73,7 @@ export default function Chat(){
                                                 ? '#8d5f17'  // Marrón para away
                                                 : '#1d6317'  // Verde para online o cualquier otro estado
                                     }}
+                                    onClick={() => setSelectedContact(contact)}
                                 >
                                     {contact.name}
                                 </li>
@@ -81,11 +83,48 @@ export default function Chat(){
 
                     <button className="bttnLogOut" onClick={handleLogOut}>Log Out</button>
                 </div>
+
+                {/* Mostrar messageContainer solo si hay un contacto seleccionado */}
+                {selectedContact && (
+                    <div>
+                        <div className="messageContainer">
+                            <div className="contacNameContainer">
+                                <div className="contactImage">
+                                    <img
+                                        src={"./images/usuario.png"}
+                                        alt="User"
+                                        style={{ width: '100%', height: 'auto' }}
+                                    />
+                                </div>
+                                
+                                <div className="contactUserContainer">
+                                    {selectedContact.name}  {/* Mostrar el nombre del contacto seleccionado */}
+                                </div>
+                            </div>
+
+                            <div className="showMessagesContainer">
+                                probando
+                            </div>
+
+                            <div className="messageSpace">
+                                <div className="message" contentEditable={true}>
+                                    Escribe un mensaje...
+                                </div>
+
+                                <div className="messageSpaceBttn">
+                                    <button className="sendBttn">Enviar</button>
+                                    <button className="archivosBttn">Adjuntar archivos</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
-                {addContactWindow && (
-                    <AddContact closePopup={() => setAddContactWindow(false)} refreshContacts={refreshContacts}/>
-                )}
+            {/* Pop Up añadir contacto */}
+            {addContactWindow && (
+                <AddContact closePopup={() => setAddContactWindow(false)} refreshContacts={refreshContacts}/>
+            )}
         </>
     )
 }
