@@ -13,8 +13,6 @@ export default function Chat(){
     const [contacts, setContacts] = useState([]);
     const [addContactWindow, setAddContactWindow] = useState(false);
 
-    console.log(addContactWindow)
-
     const handleLogOut = async () =>{
         try {
                 XMPPService.disconnect();
@@ -26,18 +24,18 @@ export default function Chat(){
         }
     };
 
-    useEffect(() => {
-        const fetchContacts = async () => {
-            try {
-                const contactList = await XMPPService.getContacts();
-                setContacts(contactList);
-            } catch (error) {
-                console.error("Error obteniendo los contactos: ", error);
-                navigate('/');
-            }
-        };
+    const refreshContacts = async () => {
+        try {
+            const contactList = await XMPPService.getContacts();
+            setContacts(contactList);
+        } catch (error) {
+            console.error("Error obteniendo los contactos: ", error);
+            navigate('/');
+        }
+    };
 
-        fetchContacts();
+    useEffect(() => {
+        refreshContacts();
 
         // Configurar el callback para actualizar el estado cuando la presencia cambie
         XMPPService.setOnContactPresenceUpdateCallback((updatedContacts) => {
@@ -86,7 +84,7 @@ export default function Chat(){
             </div>
 
                 {addContactWindow && (
-                    <AddContact closePopup={() => setAddContactWindow(false)}/>
+                    <AddContact closePopup={() => setAddContactWindow(false)} refreshContacts={refreshContacts}/>
                 )}
         </>
     )

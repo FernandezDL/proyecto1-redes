@@ -123,6 +123,28 @@ class XMPPService {
     setOnContactPresenceUpdateCallback(callback) {
         this.onContactPresenceUpdate = callback;
     }
+
+    addContact(jid) {
+        return new Promise((resolve, reject) => {
+            if (!this.connection || !this.connection.connected) {
+                reject('No hay conexión establecida con el servidor XMPP');
+                return;
+            }
+    
+            const iq = $iq({ type: 'set' })
+                .c('query', { xmlns: 'jabber:iq:roster' })
+                .c('item', { jid, name: jid, subscription: 'none' });
+    
+            this.connection.sendIQ(iq, (iqResult) => {
+                console.log(`Contacto ${jid} añadido correctamente.`);
+                resolve(iqResult);
+            }, (error) => {
+                console.error('Error al añadir el contacto', error);
+                reject(error);
+            });
+        });
+    }
+    
 }
 
 export default new XMPPService();
