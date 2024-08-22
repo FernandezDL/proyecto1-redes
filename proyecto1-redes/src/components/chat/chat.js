@@ -15,7 +15,8 @@ export default function Chat(){
     const [contacts, setContacts] = useState([]);
     const [selectedContact, setSelectedContact] = useState(null);
     const [message, setMessage] = useState("");
-    const [sentMessages, setSentMessages] = useState([]);
+    const [activeConversations, setActiveConversations] = useState([]);
+    const [sentMessages, setSentMessages] = useState({});
 
     const [addContactWindow, setAddContactWindow] = useState(false);
     const [moreOptionsWindow, setMoreOptionsWindow] = useState(false);
@@ -54,10 +55,10 @@ export default function Chat(){
 
     const handleSendMessage = () => {
         if (selectedContact && message) {
-            XMPPService.sendMessage(selectedContact.jid, message);
+            XMPPService.sendMessage(selectedContact.name, message);
     
             // Guardar solo el nombre del destinatario en la lista
-            setSentMessages(prevMessages => [
+            setActiveConversations(prevMessages => [
                 ...prevMessages,
                 selectedContact.name
             ]);
@@ -125,7 +126,7 @@ export default function Chat(){
                         </div>
 
                         <ul>
-                            {sentMessages.map((name, index) => (
+                            {activeConversations.map((name, index) => (
                                 <li key={index}>
                                     {name}
                                 </li>
