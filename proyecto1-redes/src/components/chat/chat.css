@@ -109,6 +109,18 @@ ul li {
     border: none;
 }
 
+.message{
+    width: 100%;
+
+    display: flex;
+    justify-content: space-between;
+
+    margin-bottom: 15px;
+}
+
+.messageTimestamp{
+    color: #0e69ae;
+}
 .messageSpaceBttn{
     width: 150px;
     height: 110px;

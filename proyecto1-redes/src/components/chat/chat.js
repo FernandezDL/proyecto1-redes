@@ -34,7 +34,7 @@ export default function Chat(){
 
     const handleLogOut = async () =>{
         try {
-                XMPPService.disconnect();
+            XMPPService.disconnect();
             navigate('/');
 
         } catch (err) {
@@ -56,18 +56,29 @@ export default function Chat(){
     const handleSendMessage = () => {
         if (selectedContact && message) {
             XMPPService.sendMessage(selectedContact.name, message);
-    
-            // Guardar solo el nombre del destinatario en la lista
-            setActiveConversations(prevMessages => [
+        
+            // Guardar el mensaje en la lista correspondiente al contacto
+            setSentMessages(prevMessages => ({
                 ...prevMessages,
-                selectedContact.name
-            ]);
-    
+                [selectedContact.name]: [
+                    ...(prevMessages[selectedContact.name] || []),
+                    { text: message, timestamp: new Date(), sender: 'Tú' }
+                ]
+            }));
+
+            // Verificación para evitar duplicados en la lista de conversaciones activas
+            setActiveConversations(prevMessages => {
+                if (!prevMessages.includes(selectedContact.name)) {
+                    return [...prevMessages, selectedContact.name];
+                }
+                return prevMessages;
+            });
+        
             setMessage(""); // Limpiar el campo del mensaje después de enviarlo
         } else {
             console.error("No se puede enviar un mensaje vacío o sin un contacto seleccionado.");
         }
-    };  
+    };
     
     const startChat = (contact) => {
         setSelectedContact(contact); // Selecciona el contacto para comenzar el chat
@@ -127,7 +138,20 @@ export default function Chat(){
 
                         <ul>
                             {activeConversations.map((name, index) => (
-                                <li key={index}>
+                                <li
+                                    key={index}
+                                    onClick={() => {
+                                        // Buscar el contacto en la lista de contactos
+                                        const contact = contacts.find(contact => contact.name === name);
+                                        // Si el contacto existe en la lista de contactos, seleccionarlo
+                                        if (contact) {
+                                            setSelectedContact(contact);
+                                        } else {
+                                            // Si no está en la lista de contactos, crear un contacto temporal
+                                            setSelectedContact({ name, jid: name, status: 'available' });
+                                        }
+                                    }}
+                                >
                                     {name}
                                 </li>
                             ))}
@@ -156,8 +180,23 @@ export default function Chat(){
                             </div>
 
                             <div className="showMessagesContainer">
-                                probando
+                                {sentMessages[selectedContact.name]?.map((msg, index) => (
+                                    <div key={index}>
+                                        <div style={{
+                                            color: msg.sender === 'Tú'
+                                                ? '#503850'  // Morado para mensaje propio
+                                                : '#2a1e1e',  // Café para mensaje ajeno
+                                                fontWeight: 'bold'  // Aplicar negrita al nombre
+                                        }}>{msg.sender}:</div>
+
+                                        <div className="message">
+                                            <div className="messageText">{msg.text}</div>
+                                            <div className="messageTimestamp">{msg.timestamp.toLocaleTimeString()}</div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
+
 
                             <div className="messageSpace">
                                 <textarea
