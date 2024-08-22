@@ -15,6 +15,7 @@ export default function Chat(){
     const [contacts, setContacts] = useState([]);
     const [selectedContact, setSelectedContact] = useState(null);
     const [message, setMessage] = useState("");
+    const [sentMessages, setSentMessages] = useState([]);
 
     const [addContactWindow, setAddContactWindow] = useState(false);
     const [moreOptionsWindow, setMoreOptionsWindow] = useState(false);
@@ -53,13 +54,20 @@ export default function Chat(){
 
     const handleSendMessage = () => {
         if (selectedContact && message) {
-            XMPPService.sendMessage(selectedContact.name, message);
+            XMPPService.sendMessage(selectedContact.jid, message);
+    
+            // Guardar solo el nombre del destinatario en la lista
+            setSentMessages(prevMessages => [
+                ...prevMessages,
+                selectedContact.name
+            ]);
+    
             setMessage(""); // Limpiar el campo del mensaje después de enviarlo
         } else {
             console.error("No se puede enviar un mensaje vacío o sin un contacto seleccionado.");
         }
-    };
-
+    };  
+    
     const startChat = (contact) => {
         setSelectedContact(contact); // Selecciona el contacto para comenzar el chat
         setNewChatWindow(false); // Cierra la ventana de nuevo chat
@@ -86,7 +94,7 @@ export default function Chat(){
                     <h3>{user}</h3>
 
                     <div className="contactos">
-                        <div>
+                        <div className="bottomBorder">
                             <div className="divCentrado">
                                 <h3>Contactos</h3>
 
@@ -111,6 +119,18 @@ export default function Chat(){
                                 ))}
                             </ul>
                         </div>
+
+                        <div className="divCentrado">
+                            <h3>Chats activos</h3>
+                        </div>
+
+                        <ul>
+                            {sentMessages.map((name, index) => (
+                                <li key={index}>
+                                    {name}
+                                </li>
+                            ))}
+                        </ul>
                     </div>
 
                     <button className="bttnLogOut" onClick={handleLogOut}>Log Out</button>

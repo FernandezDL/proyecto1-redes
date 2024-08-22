@@ -145,6 +145,10 @@ ul li {
 
 }
 
+.bottomBorder{
+    border-bottom: dashed;
+}
+
 .divCentrado{
     width: 100%;
 
