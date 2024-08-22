@@ -4,6 +4,7 @@ import { useNavigate, useLocation  } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import AddContact from "../addContact/addContact.js";
 import MoreOptions from "../moreOptions/moreOptions.js";
+import NewChat from "../newChat/newChat.js";
 
 export default function Chat(){
     const navigate = useNavigate(); // Hook para navegar
@@ -12,14 +13,21 @@ export default function Chat(){
     const { user } = location.state || {}; // Obtener el user del estado pasado
 
     const [contacts, setContacts] = useState([]);
-    const [addContactWindow, setAddContactWindow] = useState(false);
-    const [moreOptionsWindow, setMoreOptionsWindow] = useState(false);
     const [selectedContact, setSelectedContact] = useState(null);
     const [message, setMessage] = useState("");
+
+    const [addContactWindow, setAddContactWindow] = useState(false);
+    const [moreOptionsWindow, setMoreOptionsWindow] = useState(false);
+    const [newChatWindow, setNewChatWindow] = useState(false);
 
     const openAddContactPopup = () => {
         setMoreOptionsWindow(false); // Cerrar el pop-up de más opciones
         setAddContactWindow(true); // Abrir el pop-up de añadir contacto
+    };
+
+    const openNewChatPopup = () => {
+        setMoreOptionsWindow(false); // Cerrar el pop-up de más opciones
+        setNewChatWindow(true); // Abrir el pop-up de nuevo chat
     };
 
     const handleLogOut = async () =>{
@@ -50,6 +58,11 @@ export default function Chat(){
         } else {
             console.error("No se puede enviar un mensaje vacío o sin un contacto seleccionado.");
         }
+    };
+
+    const startChat = (contact) => {
+        setSelectedContact(contact); // Selecciona el contacto para comenzar el chat
+        setNewChatWindow(false); // Cierra la ventana de nuevo chat
     };
 
     useEffect(() => {
@@ -131,7 +144,6 @@ export default function Chat(){
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
                                     placeholder="Escribe un mensaje..."
-                                    // style={{ width: '100%', height: '100px' }}
                                 />
 
                                 <div className="messageSpaceBttn">
@@ -149,6 +161,15 @@ export default function Chat(){
                 <MoreOptions
                     closePopup={() => setMoreOptionsWindow(false)}
                     openAddContactPopup={openAddContactPopup}
+                    openNewChatPopup = {openNewChatPopup}
+                />
+            )}
+
+            {/* Pop Up nuevo chat */}
+            {newChatWindow && (
+                <NewChat
+                    closePopup={() => setNewChatWindow(false)}
+                    startChat={startChat}
                 />
             )}
 
