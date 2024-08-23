@@ -7,6 +7,7 @@ class XMPPService {
         this.status = '';
         this.contacts = {};
         this.onContactPresenceUpdate = null;  // Callback para notificar al Chat
+        this.onMessageReceived = null;  // Callback para notificar al Chat de mensajes entrantes
     }
 
     connect(user, password) {
@@ -14,6 +15,8 @@ class XMPPService {
             this.connection.connect(user, password, (status) => {
                 if (status === Strophe.Status.CONNECTED) {
                     this.connection.addHandler(this.onPresence.bind(this), null, 'presence', null, null, null);
+                    this.connection.addHandler(this.onMessage.bind(this), null, 'message', null, null, null);
+                    console.log("Manejador de mensajes registrado");  
                     this.connection.send($pres().tree());
                     this.userJid = Strophe.getBareJidFromJid(this.connection.jid);
                     resolve(status);
@@ -39,6 +42,47 @@ class XMPPService {
         this.connection.send(messageStanza.tree());
         console.log(`Mensaje enviado a ${toJid}: ${message}`);
     }
+
+    // Método para manejar mensajes entrantes
+    onMessage(message) {
+        let from = Strophe.getBareJidFromJid(message.getAttribute('from'));
+        const type = message.getAttribute('type');
+        const body = message.getElementsByTagName('body')[0];
+        const forwarded = message.getElementsByTagName('forwarded')[0];
+        let time = new Date();
+    
+        if (body) {
+            const text = body.textContent;
+    
+            // Manejo de mensajes reenviados (historial de chat)
+            if (forwarded) {
+                const delay = message.getElementsByTagName('delay')[0];
+                time = new Date(delay.getAttribute('stamp'));
+                from = Strophe.getBareJidFromJid(forwarded.getAttribute('from'));
+                console.log(`Mensaje reenviado de ${from} a ${this.userJid} en ${time.toLocaleTimeString()}: ${text}`);
+            } else if (type === 'chat') {
+                console.log(`Mensaje recibido de ${from}: ${text}`);
+            }
+    
+            if (this.onMessageReceived) {
+                this.onMessageReceived({
+                    from,
+                    text,
+                    timestamp: time
+                });
+            }
+        } else {
+            console.log(`Mensaje recibido de ${from} sin cuerpo:`, message);
+        }
+    
+        return true;
+    }  
+
+    // Configurar el callback para manejar mensajes
+    setOnMessageReceivedCallback(callback) {
+        console.log("Registrando el callback de mensaje recibido");
+        this.onMessageReceived = callback;
+    }    
 
     getContacts() {
         return new Promise((resolve, reject) => {
@@ -86,37 +130,28 @@ class XMPPService {
     }
 
     onPresence(presence) {
-        const from = Strophe.getBareJidFromJid(presence.getAttribute('from'));
-
-        // Ignorar las presencias que provienen del propio usuario
-        if (from === this.userJid) {
-            return true; // Salir de la función sin procesar esta presencia
-        }
-        
         const type = presence.getAttribute('type');
+        const from = Strophe.getBareJidFromJid(presence.getAttribute('from'));
+        let status = 'available';
         const show = presence.getElementsByTagName('show')[0];
-        const status = show ? show.textContent : (type === 'unavailable' ? 'offline' : 'available');
-
-        // Verificar si el contacto existe en el objeto this.contacts
-        if (!this.contacts[from]) {
-            // Si el contacto no existe, agregarlo con un estado por defecto
+        const message = presence.getElementsByTagName('status')[0]?.textContent || '';
+    
+        if (type === 'unavailable') {
+            status = 'offline';
+        } else if (show) {
+            status = show.textContent;
+        }
+    
+        if (from !== this.userJid) {
             this.contacts[from] = {
-                name: from,
-                subscription: 'none',  // Puedes ajustar esto según tus necesidades
-                status: 'offline'  // Establecer un estado por defecto
+                ...this.contacts[from],
+                status,
+                presence: message,
             };
         }
-
-        // Actualizar el estado del contacto basado en el tipo de presencia
-        if (type === 'unavailable') {
-            this.contacts[from].status = 'offline';
-        } else {
-            this.contacts[from].status = status;
-        }
-
-        console.log('Presence updated for', from, 'to', this.contacts[from].status);
-
-        // Notificar al componente Chat sobre la actualización
+    
+        console.log(`Presencia actualizada para ${from}: ${status}`);
+    
         if (this.onContactPresenceUpdate) {
             this.onContactPresenceUpdate(this.contacts);
         }
@@ -128,10 +163,6 @@ class XMPPService {
         if (this.connection && this.connection.connected) {
             this.connection.disconnect();
         }
-    }
-
-    onMessage(message) {
-        return true;
     }
 
     setOnContactPresenceUpdateCallback(callback) {

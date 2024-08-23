@@ -6,40 +6,37 @@ import AddContact from "../addContact/addContact.js";
 import MoreOptions from "../moreOptions/moreOptions.js";
 import NewChat from "../newChat/newChat.js";
 
-export default function Chat(){
-    const navigate = useNavigate(); // Hook para navegar
-    const location = useLocation(); // Hook para acceder al estado pasado con navigate
+export default function Chat() {
+    const navigate = useNavigate(); 
+    const location = useLocation(); 
 
-    const { user } = location.state || {}; // Obtener el user del estado pasado
+    const { user } = location.state || {}; 
 
     const [contacts, setContacts] = useState([]);
     const [selectedContact, setSelectedContact] = useState(null);
     const [message, setMessage] = useState("");
-    const [activeConversations, setActiveConversations] = useState([]);
-    const [sentMessages, setSentMessages] = useState({});
+    const [conversations, setConversations] = useState({});
 
     const [addContactWindow, setAddContactWindow] = useState(false);
     const [moreOptionsWindow, setMoreOptionsWindow] = useState(false);
     const [newChatWindow, setNewChatWindow] = useState(false);
 
     const openAddContactPopup = () => {
-        setMoreOptionsWindow(false); // Cerrar el pop-up de más opciones
-        setAddContactWindow(true); // Abrir el pop-up de añadir contacto
+        setMoreOptionsWindow(false); 
+        setAddContactWindow(true); 
     };
 
     const openNewChatPopup = () => {
-        setMoreOptionsWindow(false); // Cerrar el pop-up de más opciones
-        setNewChatWindow(true); // Abrir el pop-up de nuevo chat
+        setMoreOptionsWindow(false); 
+        setNewChatWindow(true); 
     };
 
-    const handleLogOut = async () =>{
+    const handleLogOut = async () => {
         try {
             XMPPService.disconnect();
             navigate('/');
-
         } catch (err) {
             console.error('Error en la desconexión: ', err);
-            console.log('Error en la desconexión');
         }
     };
 
@@ -55,51 +52,51 @@ export default function Chat(){
 
     const handleSendMessage = () => {
         if (selectedContact && message) {
-            XMPPService.sendMessage(selectedContact.name, message);
+            XMPPService.sendMessage(selectedContact.jid, message);
         
-            // Guardar el mensaje en la lista correspondiente al contacto
-            setSentMessages(prevMessages => ({
-                ...prevMessages,
+            setConversations(prevConversations => ({
+                ...prevConversations,
                 [selectedContact.name]: [
-                    ...(prevMessages[selectedContact.name] || []),
+                    ...(prevConversations[selectedContact.name] || []),
                     { text: message, timestamp: new Date(), sender: 'Tú' }
                 ]
             }));
-
-            // Verificación para evitar duplicados en la lista de conversaciones activas
-            setActiveConversations(prevMessages => {
-                if (!prevMessages.includes(selectedContact.name)) {
-                    return [...prevMessages, selectedContact.name];
-                }
-                return prevMessages;
-            });
         
-            setMessage(""); // Limpiar el campo del mensaje después de enviarlo
+            setMessage("");
         } else {
             console.error("No se puede enviar un mensaje vacío o sin un contacto seleccionado.");
         }
     };
-    
+
     const startChat = (contact) => {
-        setSelectedContact(contact); // Selecciona el contacto para comenzar el chat
-        setNewChatWindow(false); // Cierra la ventana de nuevo chat
+        setSelectedContact(contact); 
+        setNewChatWindow(false); 
     };
 
     useEffect(() => {
         refreshContacts();
 
-        // Configurar el callback para actualizar el estado cuando la presencia cambie
         XMPPService.setOnContactPresenceUpdateCallback((updatedContacts) => {
             setContacts(Object.values(updatedContacts));
         });
 
-        // Limpiar el callback cuando el componente se desmonte
+        XMPPService.setOnMessageReceivedCallback((message) => {
+            setConversations(prevConversations => ({
+                ...prevConversations,
+                [message.from]: [
+                    ...(prevConversations[message.from] || []),
+                    { text: message.text, timestamp: message.timestamp, sender: message.from }
+                ]
+            }));
+        });
+
         return () => {
             XMPPService.setOnContactPresenceUpdateCallback(null);
+            XMPPService.setOnMessageReceivedCallback(null);
         };
     }, []);
 
-    return(
+    return (
         <>
             <div className="chatContainer">
                 <div className="menuContainer">
@@ -116,13 +113,13 @@ export default function Chat(){
                             <ul>
                                 {contacts.map((contact, index) => (
                                     <li
-                                        key={`${contact.jid}-${index}`}  // Combinando jid con el índice para garantizar unicidad
+                                        key={`${contact.name}-${index}`}
                                         style={{
                                             color: contact.status === 'offline'
-                                                ? '#a30808'  // Rojo para offline
+                                                ? '#a30808'
                                                 : contact.status === 'away'
-                                                    ? '#8d5f17'  // Marrón para away
-                                                    : '#1d6317'  // Verde para online o cualquier otro estado
+                                                    ? '#8d5f17'
+                                                    : '#1d6317'
                                         }}
                                         onClick={() => setSelectedContact(contact)}
                                     >
@@ -137,22 +134,19 @@ export default function Chat(){
                         </div>
 
                         <ul>
-                            {activeConversations.map((name, index) => (
+                            {Object.keys(conversations).map((jid, index) => (
                                 <li
                                     key={index}
                                     onClick={() => {
-                                        // Buscar el contacto en la lista de contactos
-                                        const contact = contacts.find(contact => contact.name === name);
-                                        // Si el contacto existe en la lista de contactos, seleccionarlo
+                                        const contact = contacts.find(contact => contact.name === jid);
                                         if (contact) {
                                             setSelectedContact(contact);
                                         } else {
-                                            // Si no está en la lista de contactos, crear un contacto temporal
-                                            setSelectedContact({ name, jid: name, status: 'available' });
+                                            setSelectedContact({ name: jid, jid, status: 'available' });
                                         }
                                     }}
                                 >
-                                    {name}
+                                    {contacts.find(contact => contact.name === jid)?.name || jid}
                                 </li>
                             ))}
                         </ul>
@@ -161,7 +155,6 @@ export default function Chat(){
                     <button className="bttnLogOut" onClick={handleLogOut}>Log Out</button>
                 </div>
 
-                {/* Mostrar messageContainer solo si hay un contacto seleccionado */}
                 {selectedContact && (
                     <div>
                         <div className="messageContainer">
@@ -175,18 +168,18 @@ export default function Chat(){
                                 </div>
                                 
                                 <div className="contactUserContainer">
-                                    {selectedContact.name}  {/* Mostrar el nombre del contacto seleccionado */}
+                                    {selectedContact.name}
                                 </div>
                             </div>
 
                             <div className="showMessagesContainer">
-                                {sentMessages[selectedContact.name]?.map((msg, index) => (
+                                {conversations[selectedContact.name]?.map((msg, index) => (
                                     <div key={index}>
                                         <div style={{
                                             color: msg.sender === 'Tú'
-                                                ? '#503850'  // Morado para mensaje propio
-                                                : '#2a1e1e',  // Café para mensaje ajeno
-                                                fontWeight: 'bold'  // Aplicar negrita al nombre
+                                                ? '#873091'
+                                                : '#3792a4',
+                                            fontWeight: 'bold'
                                         }}>{msg.sender}:</div>
 
                                         <div className="message">
@@ -196,7 +189,6 @@ export default function Chat(){
                                     </div>
                                 ))}
                             </div>
-
 
                             <div className="messageSpace">
                                 <textarea
@@ -216,16 +208,14 @@ export default function Chat(){
                 )}
             </div>
 
-            {/* Pop Up mas opciones */}
             {moreOptionsWindow && (
                 <MoreOptions
                     closePopup={() => setMoreOptionsWindow(false)}
                     openAddContactPopup={openAddContactPopup}
-                    openNewChatPopup = {openNewChatPopup}
+                    openNewChatPopup={openNewChatPopup}
                 />
             )}
 
-            {/* Pop Up nuevo chat */}
             {newChatWindow && (
                 <NewChat
                     closePopup={() => setNewChatWindow(false)}
@@ -233,10 +223,9 @@ export default function Chat(){
                 />
             )}
 
-            {/* Pop Up añadir contacto */}
             {addContactWindow && (
                 <AddContact closePopup={() => setAddContactWindow(false)} refreshContacts={refreshContacts}/>
             )}
         </>
-    )
+    );
 }
