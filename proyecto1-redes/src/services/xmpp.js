@@ -190,6 +190,15 @@ class XMPPService {
         });
     }
     
+    getContactDetails(jid) {
+        return new Promise((resolve, reject) => {
+            if (this.contacts[jid]) {
+                resolve(this.contacts[jid]);
+            } else {
+                reject('Contacto no encontrado');
+            }
+        });
+    }    
 }
 
 export default new XMPPService();

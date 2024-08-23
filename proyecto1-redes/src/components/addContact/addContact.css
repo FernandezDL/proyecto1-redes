@@ -49,3 +49,8 @@
     color: white;
     font-weight: bold;
 }
+
+.userInfo{
+    height: auto;
+    gap: 10px;
+}

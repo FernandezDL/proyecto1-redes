@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import AddContact from "../addContact/addContact.js";
 import MoreOptions from "../moreOptions/moreOptions.js";
 import NewChat from "../newChat/newChat.js";
+import UserInformation from "../userInformation/userInformation.js";
 
 export default function Chat() {
     const navigate = useNavigate(); 
@@ -16,10 +17,13 @@ export default function Chat() {
     const [selectedContact, setSelectedContact] = useState(null);
     const [message, setMessage] = useState("");
     const [conversations, setConversations] = useState({});
+    const [contactDetail, setContactDetail] = useState(null);
 
     const [addContactWindow, setAddContactWindow] = useState(false);
     const [moreOptionsWindow, setMoreOptionsWindow] = useState(false);
     const [newChatWindow, setNewChatWindow] = useState(false);
+    const [showContactDetailWindow, setShowContactDetailWindow] = useState(false);
+    let userDetailsWindow = false;
 
     const openAddContactPopup = () => {
         setMoreOptionsWindow(false); 
@@ -29,6 +33,17 @@ export default function Chat() {
     const openNewChatPopup = () => {
         setMoreOptionsWindow(false); 
         setNewChatWindow(true); 
+    };
+
+    const openContactDetailPopup = async  () => {
+        if (selectedContact) {
+            const details = await XMPPService.getContactDetails(selectedContact.name);
+            userDetailsWindow = true;
+            setContactDetail(details);
+            setShowContactDetailWindow(true);
+        }
+
+        console.log(contactDetail)
     };
 
     const handleLogOut = async () => {
@@ -158,7 +173,7 @@ export default function Chat() {
                 {selectedContact && (
                     <div>
                         <div className="messageContainer">
-                            <div className="contacNameContainer">
+                            <div className="contacNameContainer" onClick={openContactDetailPopup}>
                                 <div className="contactImage">
                                     <img
                                         src={"./images/usuario.png"}
@@ -207,6 +222,15 @@ export default function Chat() {
                     </div>
                 )}
             </div>
+
+            {/* Mostrar el pop-up cuando se haga clic en el nombre del contacto */}
+            {showContactDetailWindow && (
+                // <UserInformation contactDetail={contactDetail} closePopup={setShowContactDetailWindow(false)} />
+                <UserInformation
+                    closePopup={() => setShowContactDetailWindow(false)}
+                    contactDetail={contactDetail}
+                />
+            )}
 
             {moreOptionsWindow && (
                 <MoreOptions
