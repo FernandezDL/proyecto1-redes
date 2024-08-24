@@ -1,12 +1,13 @@
 import "./chat.css";
 import XMPPService from "../../services/xmpp.js";
-import { useNavigate, useLocation  } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import AddContact from "../addContact/addContact.js";
 import MoreOptions from "../moreOptions/moreOptions.js";
 import NewChat from "../newChat/newChat.js";
 import UserInformation from "../userInformation/userInformation.js";
 import GroupChat from "../groupChat/groupChat.js";
+import PresencePopup from "../presence/presence.js";
 
 export default function Chat() {
     const navigate = useNavigate(); 
@@ -25,7 +26,8 @@ export default function Chat() {
     const [moreOptionsWindow, setMoreOptionsWindow] = useState(false);
     const [newChatWindow, setNewChatWindow] = useState(false);
     const [showContactDetailWindow, setShowContactDetailWindow] = useState(false);
-    const [groupChatWindow, setGroupChatWindow] = useState(false); // Cambiar el nombre para representar mejor la función
+    const [groupChatWindow, setGroupChatWindow] = useState(false);
+    const [presenceWindow, setPresenceWindow] = useState(false);
 
     const openAddContactPopup = () => {
         setMoreOptionsWindow(false); 
@@ -56,14 +58,14 @@ export default function Chat() {
         }
     };
 
-    const openContactDetailPopup = async  () => {
+    const openContactDetailPopup = async () => {
         if (selectedContact) {
             const details = await XMPPService.getContactDetails(selectedContact.name);
             setContactDetail(details);
             setShowContactDetailWindow(true);
         }
 
-        console.log(contactDetail)
+        console.log(contactDetail);
     };
 
     const handleLogOut = async () => {
@@ -106,6 +108,16 @@ export default function Chat() {
     const startChat = (contact) => {
         setSelectedContact(contact); 
         setNewChatWindow(false); 
+    };
+
+    const openPresencePopup = () => {
+        setMoreOptionsWindow(false);
+        setPresenceWindow(true);
+    };
+
+    const updatePresence = (status, message) => {
+        XMPPService.updatePresence(status, message);
+        setPresenceWindow(false); // Cerrar la ventana después de actualizar la presencia
     };
 
     // Función para recibir y manejar mensajes
@@ -170,12 +182,16 @@ export default function Chat() {
                                     <li
                                         key={`${contact.name}-${index}`}
                                         style={{
-                                            color: contact.status === 'offline'
-                                                ? '#a30808'
-                                                : contact.status === 'away'
-                                                    ? '#8d5f17'
-                                                    : '#1d6317'
-                                        }}
+                                            color: contact.status === 'available'
+                                                ? '#1d6317'  // Verde para available
+                                                : contact.status === 'offline'
+                                                    ? '#4c4a4a'  // Gris para offline
+                                                    : contact.status === 'away'
+                                                        ? '#815005'  // Anaranjado para away
+                                                        : contact.status === 'xa' || contact.status === 'dnd'
+                                                            ? '#a30808'  // Rojo para xa o dnd
+                                                            : '#000000'  // Color por defecto (negro) si el estado no coincide con ninguno de los anteriores
+                                        }}                                        
                                         onClick={() => setSelectedContact(contact)}
                                     >
                                         {contact.name}
@@ -305,6 +321,7 @@ export default function Chat() {
                     openAddContactPopup={openAddContactPopup}
                     openNewChatPopup={openNewChatPopup}
                     openGroupChatPopup={openGroupChatPopup} // Asegúrate de pasar esta función
+                    openPresencePopup={openPresencePopup} // Pasar la función para abrir el popup de presencia
                 />
             )}
 
@@ -317,6 +334,13 @@ export default function Chat() {
 
             {addContactWindow && (
                 <AddContact closePopup={() => setAddContactWindow(false)} refreshContacts={refreshContacts}/>
+            )}
+
+            {presenceWindow && (
+                <PresencePopup 
+                    closePopup={() => setPresenceWindow(false)}
+                    updatePresence={updatePresence}
+                />
             )}
         </>
     );

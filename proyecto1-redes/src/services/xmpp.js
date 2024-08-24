@@ -249,6 +249,21 @@ class XMPPService {
             });
         });
     }    
+
+    updatePresence(status, statusMessage) {
+        let presence = $pres();
+    
+        if (status !== "available" && status !== "offline") {
+            presence.c("show").t(status).up();
+        }
+    
+        if (statusMessage) {
+            presence.c("status").t(statusMessage);
+        }
+    
+        this.connection.send(presence.tree());
+        console.log(`Presencia actualizada: ${status}, Mensaje: ${statusMessage}`);
+    }    
 }
 
 export default new XMPPService();
