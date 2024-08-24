@@ -15,6 +15,7 @@ export default function Chat() {
     const { user } = location.state || {}; 
 
     const [contacts, setContacts] = useState([]);
+    const [groups, setGroups] = useState([]);
     const [selectedContact, setSelectedContact] = useState(null);
     const [message, setMessage] = useState("");
     const [conversations, setConversations] = useState({});
@@ -126,6 +127,23 @@ export default function Chat() {
             }));
         });
 
+        const loadContactsAndGroups = async () => {
+            try {
+                const [contactList, groupList] = await Promise.all([
+                    XMPPService.getContacts(),
+                    XMPPService.getUserGroups()
+                ]);
+    
+                setContacts(contactList);
+                setGroups(groupList);
+            } catch (error) {
+                console.error("Error obteniendo contactos o grupos: ", error);
+                navigate('/');
+            }
+        };
+    
+        loadContactsAndGroups();
+
         return () => {
             XMPPService.setOnContactPresenceUpdateCallback(null);
             XMPPService.setOnMessageReceivedCallback(null);
@@ -166,26 +184,47 @@ export default function Chat() {
                             </ul>
                         </div>
 
+                        <div className="bottomBorder">
+                            <div className="divCentrado">
+                                <h3>Chats activos</h3>
+                            </div>
+
+                            <ul>
+                                {Object.keys(conversations).map((jid, index) => (
+                                    <li
+                                        key={index}
+                                        onClick={() => {
+                                            const contact = contacts.find(contact => contact.name === jid);
+                                            if (contact) {
+                                                setSelectedContact(contact);
+                                            } else {
+                                                setSelectedContact({ name: jid, jid, status: 'available' });
+                                            }
+                                        }}
+                                    >
+                                        {contacts.find(contact => contact.name === jid)?.name || jid}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
                         <div className="divCentrado">
-                            <h3>Chats activos</h3>
+                            <h3>Chats grupales</h3>
                         </div>
 
                         <ul>
-                            {Object.keys(conversations).map((jid, index) => (
-                                <li
-                                    key={index}
-                                    onClick={() => {
-                                        const contact = contacts.find(contact => contact.name === jid);
-                                        if (contact) {
-                                            setSelectedContact(contact);
-                                        } else {
-                                            setSelectedContact({ name: jid, jid, status: 'available' });
-                                        }
-                                    }}
-                                >
-                                    {contacts.find(contact => contact.name === jid)?.name || jid}
-                                </li>
-                            ))}
+                            {groups
+                                .filter(group => group.jid && group.jid.trim() !== '' && group.name && group.name.trim() !== '')
+                                .map((group, index) => (
+                                    <li
+                                        key={`${group.name}-${index}`}
+                                        style={{ color: '#1d6317' }} // Color diferente para los grupos
+                                        onClick={() => setSelectedContact({ name: group.name, jid: group.jid })}
+                                    >
+                                        {group.name}
+                                    </li>
+                                ))
+                            }
                         </ul>
                     </div>
 

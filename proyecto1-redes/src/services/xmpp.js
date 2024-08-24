@@ -107,13 +107,13 @@ class XMPPService {
                 for (let i = 0; i < items.length; i++) {
                     const item = items[i];
                     const jid = item.getAttribute('jid');
-
-                    // Filtrar el JID del usuario actual
-                    if (jid === this.userJid) {
-                        continue; // Saltar el propio JID
-                    }
-                    
                     const name = item.getAttribute('name') || jid;
+    
+                    // Filtrar contactos con JID o nombre vacíos
+                    if (!jid || jid.trim() === '' || name.trim() === '') {
+                        continue; // Saltar este contacto
+                    }
+    
                     const subscription = item.getAttribute('subscription');
     
                     contacts.push({ jid, name, subscription, status: 'offline' });
@@ -129,7 +129,7 @@ class XMPPService {
                 reject(error);
             });
         });
-    }   
+    }      
 
     sendPresenceProbe(jid) {
         const presence = $pres({ type: 'probe', to: jid });
@@ -214,6 +214,41 @@ class XMPPService {
         this.connection.send(presence);
         console.log(`Se unió al grupo: ${roomJid} as ${nickname}`);
     }
+
+    getUserGroups() {
+        return new Promise((resolve, reject) => {
+            if (!this.connection || !this.connection.connected) {
+                reject('No hay conexión establecida con el servidor XMPP');
+                return;
+            }
+    
+            const iq = $iq({ type: 'get', to: 'conference.alumchat.lol' }) // Direccionando a la conferencia (grupo)
+                .c('query', { xmlns: 'http://jabber.org/protocol/disco#items' }); // Namespace de descubrimiento de items
+    
+            this.connection.sendIQ(iq, (iqResult) => {
+                const groups = [];
+                const items = iqResult.getElementsByTagName('item');
+    
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    const jid = item.getAttribute('jid');
+                    const name = item.getAttribute('name') || jid;
+    
+                    // Filtrar grupos con JID o nombre vacíos
+                    if (!jid || jid.trim() === '' || name.trim() === '') {
+                        continue; // Saltar este grupo
+                    }
+    
+                    groups.push({ jid, name });
+                }
+    
+                resolve(groups);
+            }, (error) => {
+                console.error('Error obteniendo los grupos del usuario', error);
+                reject(error);
+            });
+        });
+    }    
 }
 
 export default new XMPPService();

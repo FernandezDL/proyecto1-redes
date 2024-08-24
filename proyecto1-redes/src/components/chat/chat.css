@@ -33,18 +33,18 @@
     border: solid;
 
     height: 632px;
-    width: 270px;
+    width: 290px;
 
     padding-bottom: 15px;
 
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    /* justify-content: space-betweesn; */
     align-items: center;
 }
 
 .messageContainer{
-    width: 820px;
+    width: 800px;
     height: 632px;
 
     display: flex;
@@ -53,7 +53,7 @@
 }
 
 .contacNameContainer{
-    width: 808px;
+    width: 788px;
     height: 40px;
 
     padding-left: 20px;
@@ -84,7 +84,7 @@ ul li {
 }
 
 .messageSpace{
-    width: 812px;
+    width: 792px;
     height: 110px;
 
     border-top: solid;
@@ -96,14 +96,14 @@ ul li {
 }
 
 .showMessagesContainer{
-    width: 796px;
+    width: 776px;
     height: 434px;
 
     padding: 15px;
 }
 
 .messageInput{
-    width: 630px;
+    width: 610px;
     height: 105px;
     resize: none;
     background-color: transparent;
@@ -150,7 +150,7 @@ ul li {
 }
 
 .contactos{
-    width: 265px;
+    width: 285px;
     height: 450px;
 
     display: flex;
