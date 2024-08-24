@@ -49,35 +49,41 @@ class XMPPService {
         let from = Strophe.getBareJidFromJid(message.getAttribute('from'));
         const type = message.getAttribute('type');
         const body = message.getElementsByTagName('body')[0];
-        const forwarded = message.getElementsByTagName('forwarded')[0];
         let time = new Date();
     
         if (body) {
             const text = body.textContent;
+            
+            if (type === 'groupchat') {
+                const roomJid = Strophe.getBareJidFromJid(from); // El JID del grupo
+                const nickname = Strophe.getResourceFromJid(message.getAttribute('from')); // El remitente del mensaje en el grupo
+                console.log(`Mensaje recibido en grupo ${roomJid} de ${nickname}: ${text}`);
     
-            // Manejo de mensajes reenviados (historial de chat)
-            if (forwarded) {
-                const delay = message.getElementsByTagName('delay')[0];
-                time = new Date(delay.getAttribute('stamp'));
-                from = Strophe.getBareJidFromJid(forwarded.getAttribute('from'));
-                console.log(`Mensaje reenviado de ${from} a ${this.userJid} en ${time.toLocaleTimeString()}: ${text}`);
+                if (this.onMessageReceived) {
+                    this.onMessageReceived({
+                        from: nickname,  // Nombre del remitente
+                        text,
+                        timestamp: time,
+                        room: roomJid,   // JID del grupo
+                    });
+                }
             } else if (type === 'chat') {
                 console.log(`Mensaje recibido de ${from}: ${text}`);
-            }
     
-            if (this.onMessageReceived) {
-                this.onMessageReceived({
-                    from,
-                    text,
-                    timestamp: time
-                });
+                if (this.onMessageReceived) {
+                    this.onMessageReceived({
+                        from,
+                        text,
+                        timestamp: time
+                    });
+                }
             }
         } else {
             console.log(`Mensaje recibido de ${from} sin cuerpo:`, message);
         }
     
         return true;
-    }  
+    }     
 
     // Configurar el callback para manejar mensajes
     setOnMessageReceivedCallback(callback) {

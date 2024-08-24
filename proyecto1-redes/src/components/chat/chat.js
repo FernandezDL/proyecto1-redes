@@ -107,6 +107,7 @@ export default function Chat() {
         setNewChatWindow(false); 
     };
 
+    // Función para recibir y manejar mensajes
     useEffect(() => {
         refreshContacts();
 
@@ -115,10 +116,11 @@ export default function Chat() {
         });
 
         XMPPService.setOnMessageReceivedCallback((message) => {
+            const jid = message.room || message.from; // Usamos el JID de la sala si es un chat grupal
             setConversations(prevConversations => ({
                 ...prevConversations,
-                [message.from]: [
-                    ...(prevConversations[message.from] || []),
+                [jid]: [
+                    ...(prevConversations[jid] || []),
                     { text: message.text, timestamp: message.timestamp, sender: message.from }
                 ]
             }));
@@ -129,6 +131,7 @@ export default function Chat() {
             XMPPService.setOnMessageReceivedCallback(null);
         };
     }, []);
+
 
     return (
         <>
