@@ -80,6 +80,7 @@
 
 ul li {
     cursor: pointer;  /* Cambia el cursor a un puntero (mano) cuando se pasa sobre los nombres */
+    flex-wrap: wrap;
 }
 
 .messageSpace{
@@ -154,7 +155,7 @@ ul li {
 
     display: flex;
     flex-direction: column;
-
+    overflow-y: auto; /* Scroll vertical si el contenido no cabe */
 }
 
 .bottomBorder{

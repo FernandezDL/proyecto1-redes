@@ -6,6 +6,7 @@ import AddContact from "../addContact/addContact.js";
 import MoreOptions from "../moreOptions/moreOptions.js";
 import NewChat from "../newChat/newChat.js";
 import UserInformation from "../userInformation/userInformation.js";
+import GroupChat from "../groupChat/groupChat.js";
 
 export default function Chat() {
     const navigate = useNavigate(); 
@@ -23,7 +24,7 @@ export default function Chat() {
     const [moreOptionsWindow, setMoreOptionsWindow] = useState(false);
     const [newChatWindow, setNewChatWindow] = useState(false);
     const [showContactDetailWindow, setShowContactDetailWindow] = useState(false);
-    let userDetailsWindow = false;
+    const [groupChatWindow, setGroupChatWindow] = useState(false); // Cambiar el nombre para representar mejor la función
 
     const openAddContactPopup = () => {
         setMoreOptionsWindow(false); 
@@ -35,10 +36,28 @@ export default function Chat() {
         setNewChatWindow(true); 
     };
 
+    const openGroupChatPopup = () => {
+        setMoreOptionsWindow(false);
+        setGroupChatWindow(true); // Abre el pop-up de unión a chat grupal
+    };
+
+    const closeGroupChatPopup = () => {
+        setGroupChatWindow(false);
+    };
+
+    const joinGroupChat = async (groupJid) => {
+        try {
+            XMPPService.joinGroupChat(groupJid, user);
+            setSelectedContact({ name: groupJid, jid: groupJid, status: 'available' });
+            setGroupChatWindow(false);
+        } catch (error) {
+            console.error("Error al unirse al grupo: ", error);
+        }
+    };
+
     const openContactDetailPopup = async  () => {
         if (selectedContact) {
             const details = await XMPPService.getContactDetails(selectedContact.name);
-            userDetailsWindow = true;
             setContactDetail(details);
             setShowContactDetailWindow(true);
         }
@@ -67,7 +86,7 @@ export default function Chat() {
 
     const handleSendMessage = () => {
         if (selectedContact && message) {
-            XMPPService.sendMessage(selectedContact.jid, message);
+            XMPPService.sendMessage(selectedContact.name, message);
         
             setConversations(prevConversations => ({
                 ...prevConversations,
@@ -223,9 +242,15 @@ export default function Chat() {
                 )}
             </div>
 
+            {groupChatWindow && (
+                <GroupChat
+                    closePopup={closeGroupChatPopup}
+                    joinGroupChat={joinGroupChat}
+                />
+            )}
+            
             {/* Mostrar el pop-up cuando se haga clic en el nombre del contacto */}
             {showContactDetailWindow && (
-                // <UserInformation contactDetail={contactDetail} closePopup={setShowContactDetailWindow(false)} />
                 <UserInformation
                     closePopup={() => setShowContactDetailWindow(false)}
                     contactDetail={contactDetail}
@@ -237,6 +262,7 @@ export default function Chat() {
                     closePopup={() => setMoreOptionsWindow(false)}
                     openAddContactPopup={openAddContactPopup}
                     openNewChatPopup={openNewChatPopup}
+                    openGroupChatPopup={openGroupChatPopup} // Asegúrate de pasar esta función
                 />
             )}
 

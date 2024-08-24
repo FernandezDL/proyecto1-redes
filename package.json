@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "strophe.js": "^3.0.1",
+    "strophejs-plugin-muc": "^1.1.0"
+  }
+}

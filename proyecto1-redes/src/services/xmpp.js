@@ -1,4 +1,5 @@
 import { Strophe, $pres, $msg, $iq } from 'strophe.js';
+// import 'strophe.js/plugins/muc'; 
 
 class XMPPService {
     constructor() {
@@ -198,7 +199,15 @@ class XMPPService {
                 reject('Contacto no encontrado');
             }
         });
-    }    
+    }   
+    
+    // Método en XMPPService para unirse a un grupo
+    joinGroupChat(roomJid, nickname) {
+        const presence = $pres({ to: `${roomJid}/${nickname}` })
+            .c('x', { xmlns: 'http://jabber.org/protocol/muc' });
+        this.connection.send(presence);
+        console.log(`Se unió al grupo: ${roomJid} as ${nickname}`);
+    }
 }
 
 export default new XMPPService();

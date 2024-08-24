@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import "../addContact/addContact.css";
 import {TextField} from "@mui/material";
-import XMPPService from "../../services/xmpp.js";
 
 export default function NewChat({ closePopup, startChat }) {
     const [user, setUser] = useState("");
