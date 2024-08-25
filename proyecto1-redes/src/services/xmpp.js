@@ -98,6 +98,28 @@ class XMPPService {
         }
     }
 
+    deleteAccount() {
+        return new Promise((resolve, reject) => {
+            if (!this.connection || !this.connection.connected) {
+                reject('No hay conexión establecida con el servidor XMPP');
+                return;
+            }
+    
+            const iq = $iq({ type: 'set', to: 'alumchat.lol' })
+                .c('query', { xmlns: 'jabber:iq:register' })
+                .c('remove');  // Indica la eliminación de la cuenta
+    
+            this.connection.sendIQ(iq, (iqResult) => {
+                console.log('Cuenta eliminada exitosamente');
+                this.disconnect();  // Desconecta al usuario después de eliminar la cuenta
+                resolve('Cuenta eliminada exitosamente');
+            }, (error) => {
+                console.error('Error al eliminar la cuenta', error);
+                reject('Error al eliminar la cuenta');
+            });
+        });
+    }    
+
     sendMessage(toJid, message) {
         if (!this.connection || !this.connection.connected) {
             console.error('No hay conexión establecida con el servidor XMPP');

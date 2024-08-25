@@ -8,6 +8,7 @@ import NewChat from "../newChat/newChat.js";
 import UserInformation from "../userInformation/userInformation.js";
 import GroupChat from "../groupChat/groupChat.js";
 import PresencePopup from "../presence/presence.js";
+import EliminarCuenta from "../eliminarCuenta/eliminarCuenta.js";
 
 export default function Chat() {
     const navigate = useNavigate(); 
@@ -28,10 +29,16 @@ export default function Chat() {
     const [showContactDetailWindow, setShowContactDetailWindow] = useState(false);
     const [groupChatWindow, setGroupChatWindow] = useState(false);
     const [presenceWindow, setPresenceWindow] = useState(false);
+    const [eliminarCuentaWindow, setEliminarCuentaWindow] = useState(false);
 
     const openAddContactPopup = () => {
         setMoreOptionsWindow(false); 
         setAddContactWindow(true); 
+    };
+
+    const openEliminarCuenta = () => {
+        setMoreOptionsWindow(false); 
+        setEliminarCuentaWindow(true); 
     };
 
     const openNewChatPopup = () => {
@@ -120,6 +127,15 @@ export default function Chat() {
         setPresenceWindow(false); // Cerrar la ventana después de actualizar la presencia
     };
 
+    const eliminarCuenta = async () => {
+        try {
+            await XMPPService.deleteAccount();
+            navigate('/');  // Redirigir al usuario a la página de inicio después de eliminar la cuenta
+        } catch (err) {
+            console.error('Error eliminando la cuenta:', err);
+        }
+    };
+
     // Función para recibir y manejar mensajes
     useEffect(() => {
         refreshContacts();
@@ -167,9 +183,11 @@ export default function Chat() {
         <>
             <div className="chatContainer">
                 <div className="menuContainer">
+                    <div></div>
                     <h3>{user}</h3>
 
                     <div className="contactos">
+                        {/* contactos */}
                         <div className="bottomBorder">
                             <div className="divCentrado">
                                 <h3>Contactos</h3>
@@ -200,6 +218,7 @@ export default function Chat() {
                             </ul>
                         </div>
 
+                        {/* Chats activos */}
                         <div className="bottomBorder">
                             <div className="divCentrado">
                                 <h3>Chats activos</h3>
@@ -224,6 +243,7 @@ export default function Chat() {
                             </ul>
                         </div>
 
+                        {/* Grupos */}
                         <div className="divCentrado">
                             <h3>Chats grupales</h3>
                         </div>
@@ -322,6 +342,7 @@ export default function Chat() {
                     openNewChatPopup={openNewChatPopup}
                     openGroupChatPopup={openGroupChatPopup} // Asegúrate de pasar esta función
                     openPresencePopup={openPresencePopup} // Pasar la función para abrir el popup de presencia
+                    openEliminarCuenta = {openEliminarCuenta}
                 />
             )}
 
@@ -340,6 +361,13 @@ export default function Chat() {
                 <PresencePopup 
                     closePopup={() => setPresenceWindow(false)}
                     updatePresence={updatePresence}
+                />
+            )}
+
+            {eliminarCuentaWindow && (
+                <EliminarCuenta 
+                    closePopup={() => setEliminarCuentaWindow(false)}
+                    eliminarCuenta={eliminarCuenta}
                 />
             )}
         </>

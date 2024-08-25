@@ -53,3 +53,10 @@
     color: white;
     font-weight: bold;
 }
+
+.horizontalContainer{
+    display: flex;
+    flex-direction: row;
+
+    gap: 15px;
+}
