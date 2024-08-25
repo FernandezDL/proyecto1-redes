@@ -6,6 +6,7 @@
 - [File organization](https://github.com/FernandezDL/proyecto1-redes?tab=readme-ov-file#file-organization)
 - [Compilation](https://github.com/FernandezDL/proyecto1-redes?tab=readme-ov-file#compilation)
 - [Server domain](https://github.com/FernandezDL/proyecto1-redes?tab=readme-ov-file#server-domain)
+- [Implemented functionalities](https://github.com/FernandezDL/proyecto1-redes?tab=readme-ov-file#implemented-functionalities)
 - [Author](https://github.com/FernandezDL/proyecto1-redes?tab=readme-ov-file#author)
 
   
@@ -141,6 +142,18 @@ If you want or need to make changes in the project you can modify the necessary 
 ## Server domain
 The server for this project was provided by the course professors, and the domain for this project is `alumchat.lol`.
 
+## Implemented functionalities
+- Register a new account on the server
+- Log in with an account
+- Log out with an account
+- Delete an account from the server
+- Display contacts and their status
+- Add a user to contacts
+- Show the contact details of a user
+- 1-to-1 communication with any user or contact
+- Participate in group conversations
+- Define presence message
+ 
 ## Author
 Diana Lucía Fernández Villatoro - 21747
 
