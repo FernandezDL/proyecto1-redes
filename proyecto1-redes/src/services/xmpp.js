@@ -12,6 +12,7 @@ class XMPPService {
         this.onMessageReceived = null;  // Callback para notificar al Chat de mensajes entrantes
     }
 
+    // Método para manejar la conexión de un usuario
     connect(user, password) {
         return new Promise((resolve, reject) => {
             // Verifica si el usuario ya tiene '@alumchat.lol' al final, si no, agrégalo
@@ -23,7 +24,6 @@ class XMPPService {
                 if (status === Strophe.Status.CONNECTED) {
                     this.connection.addHandler(this.onPresence.bind(this), null, 'presence', null, null, null);
                     this.connection.addHandler(this.onMessage.bind(this), null, 'message', null, null, null);
-                    console.log("Manejador de mensajes registrado");  
                     this.connection.send($pres().tree());
                     this.userJid = Strophe.getBareJidFromJid(this.connection.jid);
                     resolve(status);
@@ -36,6 +36,7 @@ class XMPPService {
         });
     }    
 
+    // Método para registrar nuevas cuentas
     register(user, password) {
         try {
           const xmppClient = client({
@@ -89,7 +90,7 @@ class XMPPService {
             });
     
             xmppClient.start().catch((err) => { 
-              console.log('Aqui', err);
+              console.log(err);
              });
           });
         } catch (error) {
@@ -98,6 +99,7 @@ class XMPPService {
         }
     }
 
+    // Método para eliminar cuentas
     deleteAccount() {
         return new Promise((resolve, reject) => {
             if (!this.connection || !this.connection.connected) {
@@ -120,6 +122,7 @@ class XMPPService {
         });
     }    
 
+    // Método para enviar mensajes
     sendMessage(toJid, message) {
         if (!this.connection || !this.connection.connected) {
             console.error('No hay conexión establecida con el servidor XMPP');
@@ -181,6 +184,7 @@ class XMPPService {
         this.onMessageReceived = callback;
     }    
 
+    // Método para buscar los contactos de un usuario
     getContacts() {
         return new Promise((resolve, reject) => {
             if (!this.connection || !this.connection.connected) {
@@ -226,6 +230,7 @@ class XMPPService {
         this.connection.send(presence.tree());
     }
 
+    // Método para buscar la presencia de un usuario
     onPresence(presence) {
         const type = presence.getAttribute('type');
         const from = Strophe.getBareJidFromJid(presence.getAttribute('from'));
@@ -256,6 +261,7 @@ class XMPPService {
         return true;
     }
    
+    // Método para manejar la desconexión de una cuenta
     disconnect() {
         if (this.connection && this.connection.connected) {
             this.connection.disconnect();
@@ -266,6 +272,7 @@ class XMPPService {
         this.onContactPresenceUpdate = callback;
     }
 
+    // Método para manejar la adición de nuevos contactos
     addContact(jid) {
         return new Promise((resolve, reject) => {
             if (!this.connection || !this.connection.connected) {
@@ -287,6 +294,7 @@ class XMPPService {
         });
     }
     
+    // Método para buscar la información de un contacto
     getContactDetails(jid) {
         return new Promise((resolve, reject) => {
             if (this.contacts[jid]) {
@@ -305,6 +313,7 @@ class XMPPService {
         console.log(`Se unió al grupo: ${roomJid} as ${nickname}`);
     }
 
+    // Método para buscar los grupos existentes
     getUserGroups() {
         return new Promise((resolve, reject) => {
             if (!this.connection || !this.connection.connected) {
@@ -340,6 +349,7 @@ class XMPPService {
         });
     }    
 
+    // Método para manejar la actualización de la presencia del usuario conectado
     updatePresence(status, statusMessage) {
         let presence = $pres();
     

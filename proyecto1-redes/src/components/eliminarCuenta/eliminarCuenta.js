@@ -2,7 +2,6 @@ import React from "react";
 import "../addContact/addContact.css";
 
 export default function EliminarCuenta({ closePopup, eliminarCuenta }) {
-    
     return(
         <div className="popupContainer">
             <div className="popupContent">

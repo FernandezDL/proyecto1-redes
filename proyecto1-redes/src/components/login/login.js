@@ -10,7 +10,6 @@ export default function Login(){
     const [password, setPassword] = useState('');
     
     const [error, setError] = useState(null);
-    const [success, setSuccess] = useState('');
     
     const navigate = useNavigate(); // Hook para navegar
 
@@ -35,7 +34,6 @@ export default function Login(){
             // Registrar al usuario
             const response = await XMPPService.register(user, password);
             if (response.status) {
-                setSuccess(response.message);
                 console.log("Registro exitoso. Conectando...");
     
                 // Conectar automáticamente después del registro exitoso
