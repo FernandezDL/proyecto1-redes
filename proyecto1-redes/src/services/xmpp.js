@@ -1,5 +1,6 @@
 import { Strophe, $pres, $msg, $iq } from 'strophe.js';
-// import 'strophe.js/plugins/muc'; 
+import { client, xml } from '@xmpp/client';
+import debug from '@xmpp/debug';
 
 class XMPPService {
     constructor() {
@@ -13,6 +14,11 @@ class XMPPService {
 
     connect(user, password) {
         return new Promise((resolve, reject) => {
+            // Verifica si el usuario ya tiene '@alumchat.lol' al final, si no, agrégalo
+            if (!user.includes('@')) {
+                user = `${user}@alumchat.lol`;
+            }
+    
             this.connection.connect(user, password, (status) => {
                 if (status === Strophe.Status.CONNECTED) {
                     this.connection.addHandler(this.onPresence.bind(this), null, 'presence', null, null, null);
@@ -28,6 +34,68 @@ class XMPPService {
                 }
             });
         });
+    }    
+
+    register(user, password) {
+        try {
+          const xmppClient = client({
+            service: 'ws://alumchat.lol:7070/ws',
+            resource: '',
+            sasl: ['PLAIN'],
+          });
+          debug(xmppClient, true);
+    
+          return new Promise((resolve, reject) => {
+            xmppClient.on('error', (err) => {
+              if (err.code === 'ECONERROR') {
+                console.error('Error de conexión', err);
+                xmppClient.stop();
+                xmppClient.removeAllListeners();
+                reject({ status: false, message: 'Error en el cliente XMPP' });
+              }
+            });
+    
+            xmppClient.on('open', () => {
+              console.log('Connection established');
+              const iq = xml(
+                'iq',
+                { type: 'set', to: 'alumchat.lol', id: 'register' },
+                xml(
+                  'query',
+                  { xmlns: 'jabber:iq:register' },
+                  xml('username', {}, user),
+                  xml('password', {}, password)
+                )
+              );
+              xmppClient.send(iq);
+            });
+      
+            xmppClient.on('stanza', async (stanza) => {
+              if (stanza.is('iq') && stanza.getAttr("id") === "register") {
+                console.log('Registro exitoso', stanza);
+                await xmppClient.stop();
+                xmppClient.removeAllListeners();
+                if (stanza.getAttr("type") === "result") {
+                  resolve({ status: true, message: 'Registro exitoso. Ahora puedes hacer login.' });
+                } else if (stanza.getAttr("type") === "error") {
+                  console.log('Error en registro', stanza);
+                  const error = stanza.getChild("error");
+                  if (error?.getChild("conflict")) {
+                    reject({ status: false, message: 'El usuario ya está en uso.' });
+                  }
+                  reject({ status: false, message: 'Ocurrió un error en tu registro. Intenta nuevamente' });
+                }
+              }
+            });
+    
+            xmppClient.start().catch((err) => { 
+              console.log('Aqui', err);
+             });
+          });
+        } catch (error) {
+          console.error('Error en el registro', error);
+          throw error;
+        }
     }
 
     sendMessage(toJid, message) {
