@@ -1,12 +1,12 @@
 # Project 1 - Chat with XMPP protocol
 ## Index
-- [Description]()
-- [Project goals]()
-- [Viewed topics]()
-- [File organization]()
-- [Compilation]()
-- [Server domain]()
-- [Author]()
+- [Description](https://github.com/FernandezDL/proyecto1-redes?tab=readme-ov-file#description)
+- [Project goals](https://github.com/FernandezDL/proyecto1-redes?tab=readme-ov-file#project-goals)
+- [Viewed topics](https://github.com/FernandezDL/proyecto1-redes?tab=readme-ov-file#viewed-topics)
+- [File organization](https://github.com/FernandezDL/proyecto1-redes?tab=readme-ov-file#file-organization)
+- [Compilation](https://github.com/FernandezDL/proyecto1-redes?tab=readme-ov-file#compilation)
+- [Server domain](https://github.com/FernandezDL/proyecto1-redes?tab=readme-ov-file#server-domain)
+- [Author](https://github.com/FernandezDL/proyecto1-redes?tab=readme-ov-file#author)
 
   
 ## Description
