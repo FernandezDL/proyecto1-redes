@@ -9,6 +9,7 @@ import UserInformation from "../userInformation/userInformation.js";
 import GroupChat from "../groupChat/groupChat.js";
 import PresencePopup from "../presence/presence.js";
 import EliminarCuenta from "../eliminarCuenta/eliminarCuenta.js";
+import CreateGroupChatRoom from "../createGroupChatRoom/createGroupChatRoom.js";
 
 export default function Chat() {
     const navigate = useNavigate(); 
@@ -30,6 +31,7 @@ export default function Chat() {
     const [groupChatWindow, setGroupChatWindow] = useState(false);
     const [presenceWindow, setPresenceWindow] = useState(false);
     const [eliminarCuentaWindow, setEliminarCuentaWindow] = useState(false);
+    const [createGroupChatWindow, setCreateGroupChatWindow] = useState(false);
 
     const openAddContactPopup = () => {
         setMoreOptionsWindow(false); 
@@ -53,6 +55,30 @@ export default function Chat() {
 
     const closeGroupChatPopup = () => {
         setGroupChatWindow(false);
+    };
+
+    const openCreateGroupChatPopup = () => {
+        setMoreOptionsWindow(false);
+        setCreateGroupChatWindow(true);
+    };
+
+    // Función para crear la sala grupal
+    const createGroupChatRoom = async (roomName) => {
+        try {
+            const roomJid = `${roomName.replaceAll(' ', '_')}@conference.alumchat.lol`;
+            await XMPPService.createGroupChatRoom(roomName, user);
+
+            // Agregar la nueva sala grupal al estado 'groups'
+            setGroups(prevGroups => [
+                ...prevGroups,
+                { jid: roomJid, name: roomName }
+            ]);
+
+            // await refreshContacts();
+            setCreateGroupChatWindow(false);
+        } catch (error) {
+            console.error("Error al crear la sala grupal: ", error);
+        }
     };
 
     const joinGroupChat = async (groupJid) => {
@@ -196,25 +222,27 @@ export default function Chat() {
                             </div>
 
                             <ul>
-                                {contacts.map((contact, index) => (
-                                    <li
-                                        key={`${contact.name}-${index}`}
-                                        style={{
-                                            color: contact.status === 'available'
-                                                ? '#1d6317'  // Verde para available
-                                                : contact.status === 'offline'
-                                                    ? '#4c4a4a'  // Gris para offline
-                                                    : contact.status === 'away'
-                                                        ? '#815005'  // Anaranjado para away
-                                                        : contact.status === 'xa' || contact.status === 'dnd'
-                                                            ? '#a30808'  // Rojo para xa o dnd
-                                                            : '#000000'  // Color por defecto (negro) si el estado no coincide con ninguno de los anteriores
-                                        }}                                        
-                                        onClick={() => setSelectedContact(contact)}
-                                    >
-                                        {contact.name}
-                                    </li>
-                                ))}
+                                {contacts
+                                    .filter(contact => contact.name && contact.name.trim() !== '' && contact.name && contact.name.trim() !== '')
+                                    .map((contact, index) => (
+                                        <li
+                                            key={`${contact.name}-${index}`}
+                                            style={{
+                                                color: contact.status === 'available'
+                                                    ? '#1d6317'  // Verde para available
+                                                    : contact.status === 'offline'
+                                                        ? '#4c4a4a'  // Gris para offline
+                                                        : contact.status === 'away'
+                                                            ? '#815005'  // Anaranjado para away
+                                                            : contact.status === 'xa' || contact.status === 'dnd'
+                                                                ? '#a30808'  // Rojo para xa o dnd
+                                                                : '#000000'  // Color por defecto (negro) si el estado no coincide con ninguno de los anteriores
+                                            }}                                        
+                                            onClick={() => setSelectedContact(contact)}
+                                        >
+                                            {contact.name}
+                                        </li>
+                                    ))}
                             </ul>
                         </div>
 
@@ -343,6 +371,7 @@ export default function Chat() {
                     openGroupChatPopup={openGroupChatPopup} // Asegúrate de pasar esta función
                     openPresencePopup={openPresencePopup} // Pasar la función para abrir el popup de presencia
                     openEliminarCuenta = {openEliminarCuenta}
+                    openCreateGroupChatPopup={openCreateGroupChatPopup}
                 />
             )}
 
@@ -368,6 +397,14 @@ export default function Chat() {
                 <EliminarCuenta 
                     closePopup={() => setEliminarCuentaWindow(false)}
                     eliminarCuenta={eliminarCuenta}
+                />
+            )}
+
+            {/* Mostrar el pop-up de creación de sala grupal */}
+            {createGroupChatWindow && (
+                <CreateGroupChatRoom
+                    closePopup={() => setCreateGroupChatWindow(false)}
+                    createGroupChatRoom={createGroupChatRoom}
                 />
             )}
         </>

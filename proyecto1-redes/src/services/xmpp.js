@@ -230,6 +230,47 @@ class XMPPService {
         this.connection.send(presence.tree());
     }
 
+     // Método para crear un nuevo chat grupal
+    createGroupChatRoom(roomName, nickname) {
+        return new Promise((resolve, reject) => {
+            if (!this.connection || !this.connection.connected) {
+                return reject(new Error('La conexión no está activa.'));
+            }
+
+            const roomJid = `${roomName.replaceAll(' ', '_')}@conference.alumchat.lol`;
+
+            // Envia una presencia a la sala para unirse a ella
+            const presence = $pres({ to: `${roomJid}/${nickname}` })
+                .c('x', { xmlns: 'http://jabber.org/protocol/muc' });
+
+            this.connection.send(presence.tree());
+
+            setTimeout(() => {
+                // Crea una solicitud IQ para configurar la sala
+                const iq = $iq({ type: 'set', to: roomJid, id: 'create_room' })
+                    .c('query', { xmlns: 'http://jabber.org/protocol/muc#owner' })
+                    .c('x', { xmlns: 'jabber:x:data', type: 'submit' })
+                    .c('field', { var: 'FORM_TYPE' })
+                    .c('value').t('http://jabber.org/protocol/muc#roomconfig').up()
+                    .up()
+                    .c('field', { var: 'muc#roomconfig_roomname' })
+                    .c('value').t(roomName).up()
+                    .c('field', { var: 'muc#roomconfig_nickname' })
+                    .c('value').t(nickname);
+
+                this.connection.sendIQ(iq,
+                    () => {
+                        resolve('Sala grupal creada con éxito.');
+                    },
+                    (error) => {
+                        console.error('Error al crear la sala grupal:', error);
+                        reject(new Error(`Error al crear la sala grupal: ${error.condition}`));
+                    }
+                );
+            }, 1000);
+        });
+    }    
+    
     // Método para buscar la presencia de un usuario
     onPresence(presence) {
         const type = presence.getAttribute('type');
