@@ -153,6 +153,7 @@ The server for this project was provided by the course professors, and the domai
 - 1-to-1 communication with any user or contact
 - Participate in group conversations
 - Define presence message
+- New messages notification
  
 ## Author
 Diana Lucía Fernández Villatoro - 21747
