@@ -1,22 +1,23 @@
-import "./chat.css";
-import XMPPService from "../../services/xmpp.js";
-import { useNavigate, useLocation } from "react-router-dom";
-import React, { useEffect, useState } from "react";
-import AddContact from "../addContact/addContact.js";
-import MoreOptions from "../moreOptions/moreOptions.js";
-import NewChat from "../newChat/newChat.js";
-import UserInformation from "../userInformation/userInformation.js";
-import GroupChat from "../groupChat/groupChat.js";
-import PresencePopup from "../presence/presence.js";
-import EliminarCuenta from "../eliminarCuenta/eliminarCuenta.js";
-import CreateGroupChatRoom from "../createGroupChatRoom/createGroupChatRoom.js";
+import "./chat.css"; // Importa los estilos CSS para el componente
+import XMPPService from "../../services/xmpp.js"; // Importa el servicio XMPP para manejar la comunicación con el servidor
+import { useNavigate, useLocation } from "react-router-dom"; // Importa hooks para la navegación y para obtener la ubicación actual en React Router
+import React, { useEffect, useState } from "react"; // Importa React y los hooks useEffect y useState
+import AddContact from "../addContact/addContact.js"; // Importa el componente para agregar contactos
+import MoreOptions from "../moreOptions/moreOptions.js"; // Importa el componente para mostrar más opciones
+import NewChat from "../newChat/newChat.js"; // Importa el componente para iniciar un nuevo chat
+import UserInformation from "../userInformation/userInformation.js"; // Importa el componente para mostrar la información de un usuario
+import GroupChat from "../groupChat/groupChat.js"; // Importa el componente para unirse a un chat grupal
+import PresencePopup from "../presence/presence.js"; // Importa el componente para mostrar el popup de presencia
+import EliminarCuenta from "../eliminarCuenta/eliminarCuenta.js"; // Importa el componente para eliminar una cuenta
+import CreateGroupChatRoom from "../createGroupChatRoom/createGroupChatRoom.js"; // Importa el componente para crear una sala de chat grupal
 
 export default function Chat() {
-    const navigate = useNavigate(); 
-    const location = useLocation(); 
+    const navigate = useNavigate(); // Hook para navegar entre páginas
+    const location = useLocation(); // Hook para obtener la ubicación actual
 
-    const { user } = location.state || {}; 
+    const { user } = location.state || {}; // Obtiene el usuario del estado de la ubicación o establece un objeto vacío si no existe
 
+    // Estados locales para manejar los contactos, grupos, mensajes, y ventanas de diálogo
     const [contacts, setContacts] = useState([]);
     const [groups, setGroups] = useState([]);
     const [selectedContact, setSelectedContact] = useState(null);
@@ -33,41 +34,46 @@ export default function Chat() {
     const [eliminarCuentaWindow, setEliminarCuentaWindow] = useState(false);
     const [createGroupChatWindow, setCreateGroupChatWindow] = useState(false);
 
-
+    // Función para abrir el popup de agregar contactos
     const openAddContactPopup = () => {
-        setMoreOptionsWindow(false); 
-        setAddContactWindow(true); 
+        setMoreOptionsWindow(false); // Cierra la ventana de más opciones
+        setAddContactWindow(true); // Abre la ventana de agregar contactos
     };
 
+    // Función para abrir el popup de eliminar cuenta
     const openEliminarCuenta = () => {
-        setMoreOptionsWindow(false); 
-        setEliminarCuentaWindow(true); 
+        setMoreOptionsWindow(false); // Cierra la ventana de más opciones
+        setEliminarCuentaWindow(true); // Abre la ventana de eliminar cuenta
     };
 
+    // Función para abrir el popup de nuevo chat
     const openNewChatPopup = () => {
-        setMoreOptionsWindow(false); 
-        setNewChatWindow(true); 
+        setMoreOptionsWindow(false); // Cierra la ventana de más opciones
+        setNewChatWindow(true); // Abre la ventana de nuevo chat
     };
 
+    // Función para abrir el popup de unión a chat grupal
     const openGroupChatPopup = () => {
-        setMoreOptionsWindow(false);
-        setGroupChatWindow(true); // Abre el pop-up de unión a chat grupal
+        setMoreOptionsWindow(false); // Cierra la ventana de más opciones
+        setGroupChatWindow(true); // Abre la ventana de unión a chat grupal
     };
 
+    // Función para cerrar el popup de unión a chat grupal
     const closeGroupChatPopup = () => {
-        setGroupChatWindow(false);
+        setGroupChatWindow(false); // Cierra la ventana de unión a chat grupal
     };
 
+    // Función para abrir el popup de creación de sala grupal
     const openCreateGroupChatPopup = () => {
-        setMoreOptionsWindow(false);
-        setCreateGroupChatWindow(true);
+        setMoreOptionsWindow(false); // Cierra la ventana de más opciones
+        setCreateGroupChatWindow(true); // Abre la ventana de creación de sala grupal
     };
 
     // Función para crear la sala grupal
     const createGroupChatRoom = async (roomName) => {
         try {
-            const roomJid = `${roomName.replaceAll(' ', '_')}@conference.alumchat.lol`;
-            await XMPPService.createGroupChatRoom(roomName, user);
+            const roomJid = `${roomName.replaceAll(' ', '_')}@conference.alumchat.lol`; // Crea el JID de la sala grupal
+            await XMPPService.createGroupChatRoom(roomName, user); // Llama al servicio XMPP para crear la sala
 
             // Agregar la nueva sala grupal al estado 'groups'
             setGroups(prevGroups => [
@@ -75,55 +81,59 @@ export default function Chat() {
                 { jid: roomJid, name: roomName }
             ]);
 
-            // await refreshContacts();
-            setCreateGroupChatWindow(false);
+            setCreateGroupChatWindow(false); // Cierra la ventana de creación de sala grupal
         } catch (error) {
-            console.error("Error al crear la sala grupal: ", error);
+            console.error("Error al crear la sala grupal: ", error); // Muestra un error si falla la creación
         }
     };
 
+    // Función para unirse a un chat grupal
     const joinGroupChat = async (groupJid) => {
         try {
-            XMPPService.joinGroupChat(groupJid, user);
-            setSelectedContact({ name: groupJid, jid: groupJid, status: 'available' });
-            setGroupChatWindow(false);
+            XMPPService.joinGroupChat(groupJid, user); // Llama al servicio XMPP para unirse al chat grupal
+            setSelectedContact({ name: groupJid, jid: groupJid, status: 'available' }); // Establece el contacto seleccionado al grupo
+            setGroupChatWindow(false); // Cierra la ventana de unión a chat grupal
         } catch (error) {
-            console.error("Error al unirse al grupo: ", error);
+            console.error("Error al unirse al grupo: ", error); // Muestra un error si falla la unión
         }
     };
 
+    // Función para abrir el popup de detalles de contacto
     const openContactDetailPopup = async () => {
         if (selectedContact) {
-            const details = await XMPPService.getContactDetails(selectedContact.name);
-            setContactDetail(details);
-            setShowContactDetailWindow(true);
+            const details = await XMPPService.getContactDetails(selectedContact.name); // Obtiene los detalles del contacto seleccionado
+            setContactDetail(details); // Establece los detalles en el estado
+            setShowContactDetailWindow(true); // Abre la ventana de detalles del contacto
         }
 
-        console.log(contactDetail);
+        console.log(contactDetail); // Muestra los detalles del contacto en la consola
     };
 
+    // Función para manejar el cierre de sesión
     const handleLogOut = async () => {
         try {
-            XMPPService.disconnect();
-            navigate('/');
+            XMPPService.disconnect(); // Llama al servicio XMPP para desconectar al usuario
+            navigate('/'); // Navega a la página de inicio después de la desconexión
         } catch (err) {
-            console.error('Error en la desconexión: ', err);
+            console.error('Error en la desconexión: ', err); // Muestra un error si falla la desconexión
         }
     };
 
+    // Función para actualizar la lista de contactos
     const refreshContacts = async () => {
         try {
-            const contactList = await XMPPService.getContacts();
-            setContacts(contactList);
+            const contactList = await XMPPService.getContacts(); // Obtiene la lista de contactos desde el servicio XMPP
+            setContacts(contactList); // Establece la lista de contactos en el estado
         } catch (error) {
-            console.error("Error obteniendo los contactos: ", error);
-            navigate('/');
+            console.error("Error obteniendo los contactos: ", error); // Muestra un error si falla la obtención de contactos
+            navigate('/'); // Navega a la página de inicio si hay un error
         }
     };
 
+    // Función para enviar un mensaje
     const handleSendMessage = () => {
         if (selectedContact && message) {
-            XMPPService.sendMessage(selectedContact.name, message);
+            XMPPService.sendMessage(selectedContact.name, message); // Llama al servicio XMPP para enviar el mensaje
         
             setConversations(prevConversations => ({
                 ...prevConversations,
@@ -133,44 +143,50 @@ export default function Chat() {
                 ]
             }));
         
-            setMessage("");
+            setMessage(""); // Limpia el input de mensaje después de enviarlo
         } else {
-            console.error("No se puede enviar un mensaje vacío o sin un contacto seleccionado.");
+            console.error("No se puede enviar un mensaje vacío o sin un contacto seleccionado."); // Muestra un error si no hay contacto seleccionado o el mensaje está vacío
         }
     };
 
+    // Función para iniciar un chat con un contacto
     const startChat = (contact) => {
-        setSelectedContact(contact); 
-        setNewChatWindow(false); 
+        setSelectedContact(contact); // Establece el contacto seleccionado
+        setNewChatWindow(false); // Cierra la ventana de nuevo chat
     };
 
+    // Función para abrir el popup de estado de presencia
     const openPresencePopup = () => {
-        setMoreOptionsWindow(false);
-        setPresenceWindow(true);
+        setMoreOptionsWindow(false); // Cierra la ventana de más opciones
+        setPresenceWindow(true); // Abre la ventana de estado de presencia
     };
 
+    // Función para actualizar el estado de presencia
     const updatePresence = (status, message) => {
-        XMPPService.updatePresence(status, message);
-        setPresenceWindow(false); // Cerrar la ventana después de actualizar la presencia
+        XMPPService.updatePresence(status, message); // Llama al servicio XMPP para actualizar la presencia
+        setPresenceWindow(false); // Cierra la ventana de presencia después de actualizarla
     };
 
+    // Función para eliminar la cuenta
     const eliminarCuenta = async () => {
         try {
-            await XMPPService.deleteAccount();
-            navigate('/');  // Redirigir al usuario a la página de inicio después de eliminar la cuenta
+            await XMPPService.deleteAccount(); // Llama al servicio XMPP para eliminar la cuenta
+            navigate('/');  // Redirige al usuario a la página de inicio después de eliminar la cuenta
         } catch (err) {
-            console.error('Error eliminando la cuenta:', err);
+            console.error('Error eliminando la cuenta:', err); // Muestra un error si falla la eliminación
         }
     };
 
-    // Función para recibir y manejar mensajes
+    // useEffect para manejar las actualizaciones de presencia y mensajes
     useEffect(() => {
-        refreshContacts();
+        refreshContacts(); // Actualiza la lista de contactos al montar el componente
     
+        // Configura el callback para actualizar la lista de contactos cuando cambie la presencia
         XMPPService.setOnContactPresenceUpdateCallback((updatedContacts) => {
-            setContacts(Object.values(updatedContacts));
+            setContacts(Object.values(updatedContacts)); // Actualiza los contactos en el estado
         });
     
+        // Configura el callback para manejar mensajes entrantes
         XMPPService.setOnMessageReceivedCallback((message) => {
             const jid = message.room || message.from; // Usamos el JID de la sala si es un chat grupal
 
@@ -190,38 +206,40 @@ export default function Chat() {
             );
         });
     
+        // Carga los contactos y grupos del usuario al montar el componente
         const loadContactsAndGroups = async () => {
             try {
                 const [contactList, groupList] = await Promise.all([
-                    XMPPService.getContacts(),
-                    XMPPService.getUserGroups()
+                    XMPPService.getContacts(), // Obtiene la lista de contactos
+                    XMPPService.getUserGroups() // Obtiene la lista de grupos
                 ]);
     
-                setContacts(contactList);
-                setGroups(groupList);
+                setContacts(contactList); // Establece la lista de contactos en el estado
+                setGroups(groupList); // Establece la lista de grupos en el estado
             } catch (error) {
-                console.error("Error obteniendo contactos o grupos: ", error);
-                navigate('/');
+                console.error("Error obteniendo contactos o grupos: ", error); // Muestra un error si falla la obtención
+                navigate('/'); // Navega a la página de inicio si hay un error
             }
         };
     
-        loadContactsAndGroups();
+        loadContactsAndGroups(); // Llama a la función para cargar contactos y grupos
     
         return () => {
-            XMPPService.setOnContactPresenceUpdateCallback(null);
-            XMPPService.setOnMessageReceivedCallback(null);
+            XMPPService.setOnContactPresenceUpdateCallback(null); // Limpia el callback de presencia al desmontar el componente
+            XMPPService.setOnMessageReceivedCallback(null); // Limpia el callback de mensajes al desmontar el componente
         };
     }, []);
 
+    // Render del componente
     return (
         <>
             <div className="chatContainer">
                 <div className="menuContainer">
                     <div></div>
-                    <h3>{user}</h3>
+                    <h3>{user}</h3> {/* Muestra el nombre de usuario en el menú */}
 
                     <div className="contactos">
-                        {/* contactos */}
+                        {/* Lista de contactos */}
                         <div className="bottomBorder">
                             <div className="divCentrado">
                                 <h3>Contactos</h3>
@@ -231,7 +249,7 @@ export default function Chat() {
 
                             <ul>
                                 {contacts
-                                    .filter(contact => contact.name && contact.name.trim() !== '' && contact.name && contact.name.trim() !== '')
+                                    .filter(contact => contact.name && contact.name.trim() !== '')
                                     .map((contact, index) => (
                                         <li
                                             key={`${contact.name}-${index}`}
@@ -255,7 +273,7 @@ export default function Chat() {
                             </ul>
                         </div>
 
-                        {/* Chats activos */}
+                        {/* Lista de chats activos */}
                         <div className="bottomBorder">
                             <div className="divCentrado">
                                 <h3>Chats activos</h3>
@@ -268,9 +286,9 @@ export default function Chat() {
                                         onClick={() => {
                                             const contact = contacts.find(contact => contact.name === jid);
                                             if (contact) {
-                                                setSelectedContact(contact);
+                                                setSelectedContact(contact); // Selecciona el contacto si está en la lista de contactos
                                             } else {
-                                                setSelectedContact({ name: jid, jid, status: 'available' });
+                                                setSelectedContact({ name: jid, jid, status: 'available' }); // Selecciona el contacto como un nuevo contacto
                                             }
                                         }}
                                     >
@@ -280,7 +298,7 @@ export default function Chat() {
                             </ul>
                         </div>
 
-                        {/* Grupos */}
+                        {/* Lista de chats grupales */}
                         <div className="divCentrado">
                             <h3>Chats grupales</h3>
                         </div>
@@ -301,10 +319,10 @@ export default function Chat() {
                         </ul>
                     </div>
 
-                    <button className="bttnLogOut" onClick={handleLogOut}>Log Out</button>
+                    <button className="bttnLogOut" onClick={handleLogOut}>Log Out</button> {/* Botón para cerrar sesión */}
                 </div>
 
-                {selectedContact && (
+                {selectedContact && ( // Si hay un contacto seleccionado, muestra la ventana de mensajes
                     <div>
                         <div className="messageContainer">
                             <div className="contacNameContainer" onClick={openContactDetailPopup}>
@@ -326,8 +344,8 @@ export default function Chat() {
                                     <div key={index}>
                                         <div style={{
                                             color: msg.sender === 'Tú'
-                                                ? '#873091'
-                                                : '#3792a4',
+                                                ? '#873091' // Color para los mensajes enviados por el usuario
+                                                : '#3792a4', // Color para los mensajes recibidos
                                             fontWeight: 'bold'
                                         }}>{msg.sender}:</div>
 
@@ -348,8 +366,8 @@ export default function Chat() {
                                 />
 
                                 <div className="messageSpaceBttn">
-                                    <button className="sendBttn" onClick={handleSendMessage}>Enviar</button>
-                                    <button className="archivosBttn">Adjuntar archivos</button>
+                                    <button className="sendBttn" onClick={handleSendMessage}>Enviar</button> {/* Botón para enviar mensajes */}
+                                    <button className="archivosBttn">Adjuntar archivos</button> {/* Botón para adjuntar archivos */}
                                 </div>
                             </div>
                         </div>
@@ -357,7 +375,7 @@ export default function Chat() {
                 )}
             </div>
 
-            {groupChatWindow && (
+            {groupChatWindow && ( // Muestra el popup de unión a chat grupal si está abierto
                 <GroupChat
                     closePopup={closeGroupChatPopup}
                     joinGroupChat={joinGroupChat}
@@ -372,37 +390,37 @@ export default function Chat() {
                 />
             )}
 
-            {moreOptionsWindow && (
+            {moreOptionsWindow && ( // Muestra el popup de más opciones si está abierto
                 <MoreOptions
                     closePopup={() => setMoreOptionsWindow(false)}
                     openAddContactPopup={openAddContactPopup}
                     openNewChatPopup={openNewChatPopup}
-                    openGroupChatPopup={openGroupChatPopup} // Asegúrate de pasar esta función
-                    openPresencePopup={openPresencePopup} // Pasar la función para abrir el popup de presencia
-                    openEliminarCuenta = {openEliminarCuenta}
+                    openGroupChatPopup={openGroupChatPopup}
+                    openPresencePopup={openPresencePopup}
+                    openEliminarCuenta={openEliminarCuenta}
                     openCreateGroupChatPopup={openCreateGroupChatPopup}
                 />
             )}
 
-            {newChatWindow && (
+            {newChatWindow && ( // Muestra el popup de nuevo chat si está abierto
                 <NewChat
                     closePopup={() => setNewChatWindow(false)}
                     startChat={startChat}
                 />
             )}
 
-            {addContactWindow && (
+            {addContactWindow && ( // Muestra el popup de agregar contacto si está abierto
                 <AddContact closePopup={() => setAddContactWindow(false)} refreshContacts={refreshContacts}/>
             )}
 
-            {presenceWindow && (
+            {presenceWindow && ( // Muestra el popup de estado de presencia si está abierto
                 <PresencePopup 
                     closePopup={() => setPresenceWindow(false)}
                     updatePresence={updatePresence}
                 />
             )}
 
-            {eliminarCuentaWindow && (
+            {eliminarCuentaWindow && ( // Muestra el popup de eliminar cuenta si está abierto
                 <EliminarCuenta 
                     closePopup={() => setEliminarCuentaWindow(false)}
                     eliminarCuenta={eliminarCuenta}
