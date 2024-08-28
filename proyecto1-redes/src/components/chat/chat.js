@@ -23,7 +23,7 @@ export default function Chat() {
     const [message, setMessage] = useState("");
     const [conversations, setConversations] = useState({});
     const [contactDetail, setContactDetail] = useState(null);
-
+    
     const [addContactWindow, setAddContactWindow] = useState(false);
     const [moreOptionsWindow, setMoreOptionsWindow] = useState(false);
     const [newChatWindow, setNewChatWindow] = useState(false);
@@ -32,6 +32,7 @@ export default function Chat() {
     const [presenceWindow, setPresenceWindow] = useState(false);
     const [eliminarCuentaWindow, setEliminarCuentaWindow] = useState(false);
     const [createGroupChatWindow, setCreateGroupChatWindow] = useState(false);
+
 
     const openAddContactPopup = () => {
         setMoreOptionsWindow(false); 
@@ -165,13 +166,14 @@ export default function Chat() {
     // Función para recibir y manejar mensajes
     useEffect(() => {
         refreshContacts();
-
+    
         XMPPService.setOnContactPresenceUpdateCallback((updatedContacts) => {
             setContacts(Object.values(updatedContacts));
         });
-
+    
         XMPPService.setOnMessageReceivedCallback((message) => {
             const jid = message.room || message.from; // Usamos el JID de la sala si es un chat grupal
+
             setConversations(prevConversations => ({
                 ...prevConversations,
                 [jid]: [
@@ -179,8 +181,15 @@ export default function Chat() {
                     { text: message.text, timestamp: message.timestamp, sender: message.from }
                 ]
             }));
+    
+            // Actualizar el contacto con un mensaje no leído
+            setContacts(prevContacts => 
+                prevContacts.map(contact => 
+                    contact.name === jid ? { ...contact, hasUnreadMessages: true } : contact
+                )
+            );
         });
-
+    
         const loadContactsAndGroups = async () => {
             try {
                 const [contactList, groupList] = await Promise.all([
@@ -197,13 +206,12 @@ export default function Chat() {
         };
     
         loadContactsAndGroups();
-
+    
         return () => {
             XMPPService.setOnContactPresenceUpdateCallback(null);
             XMPPService.setOnMessageReceivedCallback(null);
         };
     }, []);
-
 
     return (
         <>
@@ -228,6 +236,7 @@ export default function Chat() {
                                         <li
                                             key={`${contact.name}-${index}`}
                                             style={{
+                                                fontWeight: contact.hasUnreadMessages ? 'bold' : 'normal',
                                                 color: contact.status === 'available'
                                                     ? '#1d6317'  // Verde para available
                                                     : contact.status === 'offline'
